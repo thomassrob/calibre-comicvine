@@ -6,7 +6,7 @@ A calibre metadata source plugin for comicvine.com
 Dependencies:
 
  * pycomicvine (https://github.com/authmillenon/pycomicvine)
- * Levenshtein (optional)
+ * Levenshtein (https://pypi.python.org/pypi/python-Levenshtein, optional)
 
 For convenience, a modified version of pycomicvine 0.9 is included in
 the distribution to make sure there are no external dependencies.
