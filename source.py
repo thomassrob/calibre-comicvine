@@ -191,9 +191,9 @@ def test_fields(self, mi):
   '''Return the first field from self.touched_fields that is null on the mi object'''
   for key in self.touched_fields:
     if key.startswith('identifier:'):
-      key = key.partition(':')[-1]
-      if key in ['comicvine', 'comicvine-volume']:
-        if not mi.has_identifier(key):
-          return 'identifier: ' + key
-        elif mi.is_null(key):
+      identifier = key.partition(':')[-1]
+      if identifier in ['comicvine', 'comicvine-volume']:
+        if not mi.has_identifier(identifier):
           return key
+    elif mi.is_null(key):
+      return key
