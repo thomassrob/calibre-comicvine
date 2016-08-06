@@ -15,14 +15,14 @@ from calibre.utils.config import OptionParser
 import calibre.utils.logging as calibre_logging
 from calibre_plugins.comicvine import pycomicvine
 from calibre_plugins.comicvine.config import PREFS
-from calibre_plugins.comicvine import utils
+from calibre_plugins.comicvine import ranking, utils
 
 class Comicvine(Source):
   ''' Metadata source implementation '''
   name = 'Comicvine'
   description = 'Downloads metadata and covers from Comicvine'
   author = 'Russell Heilling'
-  version = (0, 11, 2)
+  version = (0, 12, 1)
   capabilities = frozenset(['identify', 'cover'])
   touched_fields = frozenset([
     'title', 'authors', 'comments', 'publisher', 'pubdate', 'series',
@@ -127,7 +127,7 @@ class Comicvine(Source):
     'Provide a keying function for result comparison'
     (issue_number, title_tokens) = utils.normalised_title(self, title)
     return partial(
-      utils.keygen, title=title, authors=authors, identifiers=identifiers,
+      ranking.keygen, title=title, authors=authors, identifiers=identifiers,
       issue_number=issue_number, title_tokens=title_tokens)
 
   def identify(self, log, result_queue, abort,

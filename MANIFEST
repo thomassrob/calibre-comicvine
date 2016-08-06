@@ -3,6 +3,7 @@ README.md
 plugin-import-name-comicvine.txt
 __init__.py
 config.py
+ranking.py
 source.py
 utils.py
 pycomicvine/__init__.py
