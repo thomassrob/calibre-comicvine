@@ -6,7 +6,7 @@ import time
 from PyQt5.Qt import QWidget, QGridLayout, QLabel, QLineEdit
 from calibre.utils.config import JSONConfig
 
-from calibre_plugins.comicvine  import pycomicvine
+from calibre_plugins.comicvine import pycomicvine
 
 PREFS = JSONConfig('plugins/comicvine')
 PREFS.defaults['api_key'] = ''
