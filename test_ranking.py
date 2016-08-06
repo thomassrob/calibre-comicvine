@@ -37,6 +37,22 @@ class TestRanking(unittest.TestCase):
                                  title_tokens=['dogville'])
     self.assertEqual(87.0, result)
 
+  def test_score_title_generic_comments(self):
+    result = ranking.score_title(metadata=mock_metadata(series='Dogville',
+                                                        series_index=2.0,
+                                                        comments='the barkening continues'),
+                                 title='Dogville #2',
+                                 title_tokens=['dogville'])
+    self.assertEqual(29.0, result)
+
+  def test_score_title_comments_indicating_collection(self):
+    result = ranking.score_title(metadata=mock_metadata(series='Dogville',
+                                                        series_index=2.0,
+                                                        comments='this collects issues #1-10'),
+                                 title='Dogville #2',
+                                 title_tokens=['dogville'])
+    self.assertEqual(79.0, result)
+
 
 def mock_metadata(series, series_index, year=2000, comments=''):
   return type('Metadata',
