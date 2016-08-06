@@ -116,7 +116,7 @@ def build_meta(log, issue_id):
   authors = [p.name for p in issue.person_credits]
   meta = Metadata(title, authors)
   meta.series = issue.volume.name
-  meta.series_index = str(issue.issue_number)
+  meta.series_index = issue.issue_number
   meta.set_identifier('comicvine', str(issue.id))
   meta.set_identifier('comicvine-volume', str(issue.volume.id))
   meta.comments = issue.description
@@ -243,7 +243,7 @@ def score_title(metadata, title=None, issue_number=None, title_tokens=None):
       pass
   if issue_number is not None and metadata.series_index != issue_number:
     score += 50
-  if metadata.series_index not in title:
+  if str(metadata.series_index) not in title:
     score += 10
   # De-preference TPBs by looking for the phrases "collecting issues", 
   # "containing issues", etc. in the comments
