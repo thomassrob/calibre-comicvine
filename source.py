@@ -25,13 +25,13 @@ class Comicvine(Source):
   version = (0, 11, 2)
   capabilities = frozenset(['identify', 'cover'])
   touched_fields = frozenset([
-      'title', 'authors', 'comments', 'publisher', 'pubdate', 'series',
-      'identifiers:comicvine', 'identifiers:comicvine-volume',
-      ])
+    'title', 'authors', 'comments', 'publisher', 'pubdate', 'series',
+    'identifier:comicvine', 'identifier:comicvine-volume',
+  ])
 
   has_html_comments = True
   can_get_multiple_covers = True
-  
+
   def __init__(self, *args, **kwargs):
     self.logger = logging.getLogger('urls')
     self.logger.setLevel(logging.DEBUG)
@@ -52,7 +52,7 @@ class Comicvine(Source):
 
   def is_configured(self):
     return bool(PREFS.get('api_key'))
-  
+
   def _print_result(self, result, ranking, opf=False):
     if opf:
       result_text = metadata_to_opf(result)
@@ -62,7 +62,7 @@ class Comicvine(Source):
       else:
         pubdate = 'Unknown'
       result_text = '(%04d) - %s: %s [%s]' % (
-        ranking(result), result.identifiers['comicvine'], 
+        ranking(result), result.identifiers['comicvine'],
         result.title, pubdate)
     print result_text
 
@@ -74,7 +74,7 @@ class Comicvine(Source):
       parser = OptionParser(
         usage='Comicvine [t:title] [a:authors] [i:id]')
       parser.add_option('--opf', '-o', action='store_true', dest='opf')
-      parser.add_option('--verbose', '-v', default=False, 
+      parser.add_option('--verbose', '-v', default=False,
                         action='store_true', dest='verbose')
       parser.add_option('--debug_api', default=False,
                         action='store_true', dest='debug_api')
@@ -88,7 +88,7 @@ class Comicvine(Source):
       level = 'DEBUG'
     else:
       level = 'INFO'
-    setup_cli_handlers(logging.getLogger('comicvine'), 
+    setup_cli_handlers(logging.getLogger('comicvine'),
                        getattr(logging, level))
     log = calibre_logging.ThreadSafeLog(level=getattr(calibre_logging, level))
 
@@ -122,7 +122,7 @@ class Comicvine(Source):
         result_queue.put(metadata)
       log.debug('Added Issue(%s) to queue' % metadata.title)
 
-  def identify_results_keygen(self, title=None, authors=None, 
+  def identify_results_keygen(self, title=None, authors=None,
                               identifiers=None):
     'Provide a keying function for result comparison'
     (issue_number, title_tokens) = utils.normalised_title(self, title)
@@ -130,7 +130,7 @@ class Comicvine(Source):
       utils.keygen, title=title, authors=authors, identifiers=identifiers,
       issue_number=issue_number, title_tokens=title_tokens)
 
-  def identify(self, log, result_queue, abort, 
+  def identify(self, log, result_queue, abort,
                title=None, authors=None, identifiers=None, timeout=30):
     '''Attempt to identify comicvine Issue matching given parameters'''
 
@@ -173,8 +173,8 @@ class Comicvine(Source):
 
     return None
 
-  def download_cover(self, log, result_queue, abort, 
-                     title=None, authors=None, identifiers=None, 
+  def download_cover(self, log, result_queue, abort,
+                     title=None, authors=None, identifiers=None,
                      timeout=30, get_best_cover=False):
     if identifiers and 'comicvine' in identifiers:
       for url in utils.cover_urls(identifiers['comicvine'], get_best_cover):
@@ -186,3 +186,14 @@ class Comicvine(Source):
         except:
           log.exception('Failed to download cover from:', url)
 
+
+def test_fields(self, mi):
+  '''Return the first field from self.touched_fields that is null on the mi object'''
+  for key in self.touched_fields:
+    if key.startswith('identifier:'):
+      key = key.partition(':')[-1]
+      if key in ['comicvine', 'comicvine-volume']:
+        if not mi.has_identifier(key):
+          return 'identifier: ' + key
+        elif mi.is_null(key):
+          return key
