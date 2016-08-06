@@ -133,7 +133,7 @@ class Comicvine(Source):
   def identify(self, log, result_queue, abort, 
                title=None, authors=None, identifiers=None, timeout=30):
     '''Attempt to identify comicvine Issue matching given parameters'''
-    
+
     # Do a simple lookup if comicvine identifier present
     if identifiers:
       comicvine_id = identifiers.get('comicvine')
@@ -143,9 +143,10 @@ class Comicvine(Source):
         return None
 
     if title:
+      volume_id = identifiers.get('comicvine-volume') if identifiers else None
+
       # Look up candidate volumes based on title
-      (issue_number, candidate_volumes) = utils.find_title(
-        self, title, log, volumeid=identifiers.get('comicvine-volume'))
+      (issue_number, candidate_volumes) = utils.find_title(self, title, log, volumeid=volume_id)
 
       # Look up candidate authors
       candidate_authors = utils.find_authors(self, authors, log)
