@@ -30,11 +30,17 @@ class TestRanking(unittest.TestCase):
                                  title_tokens=['dogville'])
     self.assertEqual(35.0, result)
 
-  def test_score_title_with_missing_year(self):
+  def test_score_title_with_missing_publish_date_and_year(self):
     result = ranking.score_title(metadata=mock_metadata('Dogville', 2.0, None),
                                  title='Dogville #2',
                                  title_tokens=['dogville'])
     self.assertEqual(29.0, result)
+
+  def test_score_title_with_missing_publish_date(self):
+    result = ranking.score_title(metadata=mock_metadata('Dogville', 2.0, None),
+                                 title='Dogville #2 (2014)',
+                                 title_tokens=['dogville'])
+    self.assertEqual(41.0, result)
 
   def test_score_title_with_extra_tokens(self):
     result = ranking.score_title(metadata=mock_metadata('Dogville', 2.0),
