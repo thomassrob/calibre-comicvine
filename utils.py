@@ -99,7 +99,7 @@ def retry_on_cv_error(retries=2):
 def build_meta(log, issue_id):
   '''Build metadata record based on comicvine issue_id'''
   issue = pycomicvine.Issue(issue_id, field_list=[
-      'id', 'name', 'volume', 'issue_number', 'person_credits', 'description', 
+      'id', 'name', 'volume', 'issue_number', 'person_credits', 'description',
       'store_date', 'cover_date'])
   if not issue or not issue.volume:
     log.warn('Unable to load Issue(%d)' % issue_id)
@@ -121,23 +121,26 @@ def build_meta(log, issue_id):
   return meta
 
 @retry_on_cv_error()
-def find_volumes(volume_title, log, volumeid=None):
+def find_volumes(title_tokens, log, volumeid=None):
   '''Look up volumes matching title string'''
   candidate_volumes = []
   if volumeid:
+    volumeid = int(volumeid)
     log.debug('Looking up volume: %d' % volumeid)
     candidate_volumes = [pycomicvine.Volume(volumeid)]
   else:
+    log.debug("Searching for volumes: %s" % (title_tokens))
+    volume_title = ' AND '.join(title_tokens)
     log.debug('Looking up volume: %s' % volume_title)
     matches = pycomicvine.Volumes.search(
-        query=volume_title, field_list=['id', 'name', 'count_of_issues', 
+        query=volume_title, field_list=['id', 'name', 'count_of_issues',
                                         'publisher'])
     for i in range(len(matches)):
       try:
         if matches[i]:
           candidate_volumes.append(matches[i])
       except IndexError:
-        continue 
+        continue
   log.debug('found %d volume matches' % len(candidate_volumes))
   return candidate_volumes
 
@@ -154,7 +157,7 @@ def find_issues(candidate_volumes, issue_number, log):
   candidate_issues = candidate_issues + list(
     pycomicvine.Issues(
       filter=filter_string, field_list=[
-        'id', 'name', 'volume', 'issue_number', 'description', 
+        'id', 'name', 'volume', 'issue_number', 'description',
         'store_date', 'cover_date', 'image']))
   log.debug('%d matches found' % len(candidate_issues))
   return candidate_issues
@@ -164,7 +167,7 @@ def normalised_title(query, title):
   returns (issue_number,title_tokens)
   
   This method takes the provided title and breaks it down into
-  searchable components.  The issue number should be preceeded by a
+  searchable components.  The issue number should be preceded by a
   '#' mark or it will be treated as a word in the title.  Anything
   provided after the issue number (e.g. a sub-title) will be
   ignored.
@@ -190,15 +193,6 @@ def normalised_title(query, title):
     title_tokens.append(token.lower())
   return issue_number, title_tokens
 
-def find_title(query, title, log, volumeid=None):
-  '''Extract volume name and issue number from issue title'''
-  (issue_number, title_tokens) = normalised_title(query, title)
-  log.debug("Searching for %s #%s" % (title_tokens, issue_number))
-  if volumeid:
-    volumeid = int(volumeid)
-  candidate_volumes = find_volumes(' AND '.join(title_tokens), log, volumeid)
-  return (issue_number, candidate_volumes)
-
 @retry_on_cv_error()
 def find_authors(query, authors, log):
   '''Find people matching author string'''
@@ -207,7 +201,7 @@ def find_authors(query, authors, log):
   if author_name and author_name != 'Unknown':
     log.debug("Searching for author: %s" % author_name)
     candidate_authors = pycomicvine.People(
-      filter='name:%s' % (author_name), 
+      filter='name:%s' % (author_name),
       field_list=['id', 'name'])
     log.debug("%d matches found" % len(candidate_authors))
   return candidate_authors
@@ -223,4 +217,3 @@ def cover_urls(comicvine_id, get_best_cover=False):
       yield issue.image[url]
       if get_best_cover:
         break
-  

@@ -145,8 +145,10 @@ class Comicvine(Source):
     if title:
       volume_id = identifiers.get('comicvine-volume') if identifiers else None
 
+      (issue_number, title_tokens) = utils.normalised_title(self, title)
+
       # Look up candidate volumes based on title
-      (issue_number, candidate_volumes) = utils.find_title(self, title, log, volumeid=volume_id)
+      candidate_volumes = utils.find_volumes(title_tokens, log, volumeid=volume_id)
 
       # Look up candidate authors
       candidate_authors = utils.find_authors(self, authors, log)
