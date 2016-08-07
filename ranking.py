@@ -36,11 +36,10 @@ def keygen(metadata, title=None, authors=None, identifiers=None, **kwargs):
 
 
 def score_title(metadata, title=None, issue_number=None, title_tokens=None):
-  '''
-  Calculate title matching ranking
-  '''
+  """
+  Calculate title-matching score.
+  """
   score = 0
-  volume = '%s #%s' % (metadata.series.lower(), metadata.series_index)
   match_year = re.compile(r'\((\d{4})\)')
   year = match_year.search(title)
   if year:
@@ -49,24 +48,50 @@ def score_title(metadata, title=None, issue_number=None, title_tokens=None):
       score += abs(metadata.pubdate.year - int(year.group(1)))
     else:
       score += 10  # penalise entries with no publication date
-  score += abs(len(volume) - len(title))
+
+  return score + \
+         score_title_tokens(title, metadata.series, metadata.series_index, title_tokens) + \
+         score_title_length(title, metadata.series, metadata.series_index) + \
+         score_issue_number(title, issue_number, metadata.series_index) + \
+         score_comments(metadata.comments)
+
+
+def score_title_tokens(title, series, series_index, title_tokens):
+  score = 0
   for token in title_tokens:
-    if token not in volume:
+    if token not in series.lower():
       score += 10
     try:
+      volume = '%s #%s' % (series.lower(), series_index)
       similarity = Levenshtein.ratio(unicode(volume), unicode(title))
       score += 100 - int(100 * similarity)
     except NameError:
       pass
-  if issue_number is not None and metadata.series_index != issue_number:
+  return score
+
+
+def score_title_length(title, series, series_index):
+  volume = '%s #%s' % (series.lower(), series_index)
+  return abs(len(volume) - len(title))
+
+
+def score_issue_number(title, issue_number, series_index):
+  score = 0
+  if issue_number is not None and series_index != issue_number:
     score += 50
-  if str(metadata.series_index) not in title:
+  if str(series_index) not in title:
     score += 10
-  # De-preference TPBs by looking for the phrases "collecting issues",
-  # "containing issues", etc. in the comments
+  return score
+
+
+def score_comments(comments):
+  """
+  De-preference TPBs by looking for the phrases in the comments
+  "collecting issues", "containing issues", etc.
+  """
   # TODO(rgh): This should really be controlled by config
   collection = re.compile(r'(?:collect|contain)(?:s|ing) issues')
-  if metadata.comments and collection.search(metadata.comments.lower()):
-    score += 50
-
-  return score
+  if comments and collection.search(comments.lower()):
+    return 50
+  else:
+    return 0
