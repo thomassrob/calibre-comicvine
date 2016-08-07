@@ -25,19 +25,19 @@ class ConfigWidget(QWidget):
     self.layout.setSpacing(10)
     self.setLayout(self.layout)
 
-    key_msg = QLineEdit(self)
-    key_msg.setText(PREFS['api_key'])
+    self.key_msg = QLineEdit(self)
+    self.key_msg.setText(PREFS['api_key'])
     key_label = QLabel('&API key:')
-    key_label.setBuddy(key_msg)
+    key_label.setBuddy(self.key_msg)
     self.layout.addWidget(key_label, 1, 0)
-    self.layout.addWidget(key_msg, 1, 1)
+    self.layout.addWidget(self.key_msg, 1, 1)
 
-    threads_msg = QLineEdit(self)
-    threads_msg.setText(unicode(PREFS['worker_threads']))
+    self.threads_msg = QLineEdit(self)
+    self.threads_msg.setText(unicode(PREFS['worker_threads']))
     threads_label = QLabel('&Worker threads:')
-    threads_label.setBuddy(threads_msg)
+    threads_label.setBuddy(self.threads_msg)
     self.layout.addWidget(threads_label, 2, 0)
-    self.layout.addWidget(threads_msg, 2, 1)
+    self.layout.addWidget(self.threads_msg, 2, 1)
 
   def save_settings(self):
     'Apply new settings value'
