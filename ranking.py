@@ -83,8 +83,7 @@ def score_levenshtein(title, series, series_index):
   Prefer similar titles using Levenshtein ratio (if module available).
   """
   try:
-    volume = '%s #%s' % (series, series_index)
-    similarity = Levenshtein.ratio(unicode(volume.lower().strip()),
+    similarity = Levenshtein.ratio(unicode(format_canonical_title(series, series_index)),
                                    unicode(title.lower().strip()))
     return 100 - int(100 * similarity)
   except NameError:
@@ -92,8 +91,7 @@ def score_levenshtein(title, series, series_index):
 
 
 def score_title_length(title, series, series_index):
-  volume = '%s #%s' % (series.lower(), series_index)
-  return abs(len(volume.strip()) - len(title.strip()))
+  return abs(len(format_canonical_title(series, series_index)) - len(title.strip()))
 
 
 def score_issue_number(title, issue_number, series_index):
@@ -125,3 +123,7 @@ def strip_year_from_title(title):
     return match_year.sub('', title)
   else:
     return title
+
+
+def format_canonical_title(series, series_index):
+  return ('%s #%s' % (series, series_index)).lower().strip()
