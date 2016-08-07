@@ -1,6 +1,6 @@
-'''
+"""
 calibre_plugins.comicvine - A calibre metadata source for comicvine
-'''
+"""
 #pylint: disable-msg=R0913,R0904
 from functools import partial
 import logging
@@ -18,7 +18,7 @@ from calibre_plugins.comicvine.config import PREFS
 from calibre_plugins.comicvine import ranking, utils
 
 class Comicvine(Source):
-  ''' Metadata source implementation '''
+  """Metadata source implementation"""
   name = 'Comicvine'
   description = 'Downloads metadata and covers from Comicvine'
   author = 'Russell Heilling'
@@ -68,9 +68,9 @@ class Comicvine(Source):
 
 
   def cli_main(self, args):
-    'Perform comicvine lookups from the calibre-debug cli'
+    """Perform comicvine lookups from the calibre-debug cli."""
     def option_parser():
-      'Parse command line options'
+      """Parse command line options."""
       parser = OptionParser(
         usage='Comicvine [t:title] [a:authors] [i:id]')
       parser.add_option('--opf', '-o', action='store_true', dest='opf')
@@ -111,7 +111,7 @@ class Comicvine(Source):
         break
 
   def enqueue(self, log, result_queue, shutdown, issue_id):
-    'Add a result entry to the result queue'
+    """Add a result entry to the result queue."""
     if shutdown.is_set():
       raise threading.ThreadError
     log.debug('Adding Issue(%d) to queue' % issue_id)
@@ -124,7 +124,7 @@ class Comicvine(Source):
 
   def identify_results_keygen(self, title=None, authors=None,
                               identifiers=None):
-    'Provide a keying function for result comparison'
+    """Provide a keying function for result comparison."""
     (issue_number, title_tokens) = utils.normalised_title(self, title)
     return partial(
       ranking.keygen, title=title, authors=authors, identifiers=identifiers,
@@ -132,7 +132,7 @@ class Comicvine(Source):
 
   def identify(self, log, result_queue, abort,
                title=None, authors=None, identifiers=None, timeout=30):
-    '''Attempt to identify comicvine Issue matching given parameters'''
+    """Attempt to identify comicvine Issue matching given parameters."""
 
     # Do a simple lookup if comicvine identifier present
     if identifiers:
@@ -189,7 +189,7 @@ class Comicvine(Source):
 
 
 def test_fields(self, mi):
-  '''Return the first field from self.touched_fields that is null on the mi object'''
+  """Return the first field from self.touched_fields that is null on the mi object."""
   for key in self.touched_fields:
     if key.startswith('identifier:'):
       identifier = key.partition(':')[-1]
