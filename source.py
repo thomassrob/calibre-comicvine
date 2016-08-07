@@ -150,25 +150,25 @@ class Comicvine(Source):
       # Look up candidate volume IDs based on title
       candidate_volume_ids = utils.find_volume_ids(title_tokens, log, volume_id=volume_id)
 
-      # Look up candidate issues
-      candidate_issues = utils.find_issues(candidate_volume_ids, issue_number, log)
+      # Look up candidate issue IDs based on issue number
+      candidate_issue_ids = utils.find_issue_ids(candidate_volume_ids, issue_number, log)
 
       # Look up candidate authors
       candidate_authors = utils.find_authors(self, authors, log)
 
       # Refine issue selection based on authors
       if candidate_authors:
-        issues = set()
+        author_issue_ids = set()
         for author in candidate_authors:
-          issues.update(set(author.issues))
-        candidate_issues = issues.intersection(candidate_issues)
+          author_issue_ids.update(set([issue.id for issue in author.issues]))
+        candidate_issue_ids = author_issue_ids.intersection(candidate_issue_ids)
 
       # Queue candidates
       pool = ThreadPool(PREFS.get('worker_threads'))
       shutdown = threading.Event()
       enqueue = partial(self.enqueue, log, result_queue, shutdown)
       try:
-        pool.map(enqueue, [issue.id for issue in candidate_issues])
+        pool.map(enqueue, candidate_issue_ids)
       finally:
         shutdown.set()
 

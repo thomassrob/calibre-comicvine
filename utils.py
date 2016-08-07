@@ -143,21 +143,16 @@ def find_volume_ids(title_tokens, log, volume_id=None):
     return candidate_volume_ids
 
 @retry_on_cv_error()
-def find_issues(candidate_volume_ids, issue_number, log):
-  '''Find issues in candidate volumes matching issue_number'''
-  issue_filter = ['volume:%s' % (
-    '|'.join(str(id) for id in candidate_volume_ids))]
+def find_issue_ids(candidate_volume_ids, issue_number, log):
+  """Find issue IDs in candidate volumes which match the issue_number."""
+  filters = ['volume:%s' % ('|'.join(str(id) for id in candidate_volume_ids))]
   if issue_number is not None:
-    issue_filter.append('issue_number:%s' % issue_number)
-  filter_string = ','.join(issue_filter)
+    filters.append('issue_number:%s' % issue_number)
+  filter_string = ','.join(filters)
   log.debug('Searching for Issues(%s)' % filter_string)
-  candidate_issues = list(
-    pycomicvine.Issues(
-      filter=filter_string, field_list=[
-        'id', 'name', 'volume', 'issue_number', 'description',
-        'store_date', 'cover_date', 'image']))
-  log.debug('%d matches found' % len(candidate_issues))
-  return candidate_issues
+  ids = [issue.id for issue in pycomicvine.Issues(filter=filter_string, field_list=['id'])]
+  log.debug('%d matches found' % len(ids))
+  return ids
 
 def normalised_title(query, title):
   '''
