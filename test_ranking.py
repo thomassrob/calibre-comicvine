@@ -122,6 +122,7 @@ class TestRanking(unittest.TestCase):
     self.assertEqual(30, ranking.score_title_tokens('Dogville', ['dogville', 'awakening', 'by', 'cats']))
 
     # matching
+    self.assertEqual(0, ranking.score_title_tokens('dogville', ['dogville']))
     self.assertEqual(0, ranking.score_title_tokens('Dogville', ['dogville']))
     self.assertEqual(0, ranking.score_title_tokens('  Dogville  ', ['dogville']))
 
@@ -136,6 +137,7 @@ class TestRanking(unittest.TestCase):
     self.assertEqual(53, ranking.score_levenshtein('Dogville #2 (scanned by cats)', 'Dogville', 2.0))
 
     # matches expected title
+    self.assertEqual(9, ranking.score_levenshtein('dogville #2', 'Dogville', 2.0))
     self.assertEqual(17, ranking.score_levenshtein('Dogville #2', 'Dogville', 2.0))
     self.assertEqual(29, ranking.score_levenshtein('  Dogville #2  ', 'Dogville', 2.0))
 
