@@ -30,12 +30,18 @@ class TestRanking(unittest.TestCase):
                                  title_tokens=['dogville', 'awakening'])
     self.assertEqual(65.0, result)
 
-  def test_score_title_mismatched_issue_number(self):
+  def test_score_title_issue_number_does_not_match_series_index(self):
     result = ranking.score_title(metadata=mock_metadata('Dogville', 2.0),
                                  title='Dogville #5',
                                  issue_number=5,
                                  title_tokens=['dogville'])
     self.assertEqual(87.0, result)
+
+  def test_score_title_series_index_not_in_title(self):
+    result = ranking.score_title(metadata=mock_metadata('Dogville', 2.0),
+                                 title='Dogville #5',
+                                 title_tokens=['dogville'])
+    self.assertEqual(37.0, result)
 
   def test_score_title_generic_comments(self):
     result = ranking.score_title(metadata=mock_metadata(series='Dogville',
