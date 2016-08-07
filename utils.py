@@ -42,9 +42,7 @@ def build_meta(log, issue_id):
 def find_volume_ids(title_tokens, log, volume_id=None):
   """Find the volume IDs of candidate volumes that match the title string."""
   if volume_id:
-    log.debug('Looking up volume: %s' % volume_id)
-    volume = pycomicvine.Volume(id=int(volume_id), field_list=['id'])
-    return [volume.id]
+    return [PyComicvineWrapper(log).lookup_volume_id(int(volume_id))]
   else:
     return PyComicvineWrapper(log).search_for_volume_ids(title_tokens)
 

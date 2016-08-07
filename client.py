@@ -103,6 +103,13 @@ class PyComicvineWrapper(object):
     self.log = log
 
   @retry_on_comicvine_error()
+  def lookup_volume_id(self, volume_id):
+    self.debug('Looking up volume: %d' % volume_id)
+    volume = pycomicvine.Volume(id=volume_id, field_list=['id'])
+    self.debug("Found volume: %d" % volume_id)
+    return volume.id
+
+  @retry_on_comicvine_error()
   def lookup_issue(self, issue_id):
     self.debug('Looking up issue: %d' % issue_id)
     issue = pycomicvine.Issue(issue_id,
