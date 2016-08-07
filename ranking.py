@@ -87,7 +87,7 @@ def score_levenshtein(title, series, series_index):
     similarity = Levenshtein.ratio(unicode(volume), unicode(title))
     return 100 - int(100 * similarity)
   except NameError:
-    pass
+    return 0
 
 
 def score_title_length(title, series, series_index):
