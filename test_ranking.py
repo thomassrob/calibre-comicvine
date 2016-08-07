@@ -77,6 +77,19 @@ class TestRanking(unittest.TestCase):
                                  title_tokens=['dogville'])
     self.assertEqual(79.0, result)
 
+  def test_score_publish_date(self):
+    # missing data
+    self.assertEqual(0, ranking.score_publish_date('Dogville #2', None))
+    self.assertEqual(10, ranking.score_publish_date('Dogville #2 (2000)', None))
+    self.assertEqual(0, ranking.score_publish_date('Dogville #2', mock_date(2000)))
+
+    # mismatched data
+    self.assertEqual(0, ranking.score_publish_date('Dogville #2 (2000)', mock_date(2000)))
+    self.assertEqual(16, ranking.score_publish_date('Dogville #2 (2000)', mock_date(1984)))
+    self.assertEqual(1, ranking.score_publish_date('Dogville #2 (2000)', mock_date(1999)))
+    self.assertEqual(1, ranking.score_publish_date('Dogville #2 (2000)', mock_date(2001)))
+    self.assertEqual(16, ranking.score_publish_date('Dogville #2 (2000)', mock_date(2016)))
+
 
 def mock_date(year):
   if year is None:
