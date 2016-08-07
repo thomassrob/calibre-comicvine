@@ -47,12 +47,13 @@ def score_title(metadata, title=None, issue_number=None, title_tokens=None):
   if title is None:
     return 0
 
-  sanitized_title = strip_year_from_title(title)
+  sanitized_title = sanitize_title(title)
+  canonical_title = format_canonical_title(metadata.series, metadata.series_index)
 
   return score_publish_date(title, metadata.pubdate) + \
          score_title_tokens(metadata.series, title_tokens) + \
-         score_levenshtein(sanitized_title, metadata.series, metadata.series_index) + \
-         score_title_length(sanitized_title, metadata.series, metadata.series_index) + \
+         score_levenshtein(sanitized_title, canonical_title) + \
+         score_title_length(sanitized_title, canonical_title) + \
          score_issue_number(sanitized_title, issue_number, metadata.series_index) + \
          score_comments(metadata.comments)
 
@@ -73,25 +74,24 @@ def score_publish_date(title, publish_date):
 def score_title_tokens(series, title_tokens):
   score = 0
   for token in title_tokens:
-    if token not in series.lower():
+    if token.lower() not in series.lower():
       score += 10
   return score
 
 
-def score_levenshtein(title, series, series_index):
+def score_levenshtein(sanitized_title, canonical_title):
   """
   Prefer similar titles using Levenshtein ratio (if module available).
   """
   try:
-    similarity = Levenshtein.ratio(unicode(format_canonical_title(series, series_index)),
-                                   unicode(title.lower().strip()))
+    similarity = Levenshtein.ratio(unicode(canonical_title), unicode(sanitized_title))
     return 100 - int(100 * similarity)
   except NameError:
     return 0
 
 
-def score_title_length(title, series, series_index):
-  return abs(len(format_canonical_title(series, series_index)) - len(title.strip()))
+def score_title_length(sanitized_title, canonical_title):
+  return abs(len(sanitized_title) - len(canonical_title))
 
 
 def score_issue_number(title, issue_number, series_index):
@@ -117,12 +117,12 @@ def score_comments(comments):
     return 0
 
 
-def strip_year_from_title(title):
+def sanitize_title(title):
   match_year = re.compile(r'\((\d{4})\)')
   if match_year.search(title):
-    return match_year.sub('', title)
+    return match_year.sub('', title).lower().strip()
   else:
-    return title
+    return title.lower().strip()
 
 
 def format_canonical_title(series, series_index):

@@ -134,18 +134,16 @@ class TestRanking(unittest.TestCase):
 
   def test_score_levenshtein(self):
     # between similar title and series data
-    self.assertEqual(14, ranking.score_levenshtein('Dogville 002', 'Dogville', 2.0))
+    self.assertEqual(14, ranking.score_levenshtein('dogville 002', 'dogville #2'))
 
     # between very dissimilar title and series data
-    self.assertEqual(67, ranking.score_levenshtein('Cat Planet 12', 'Dogville', 2.0))
+    self.assertEqual(67, ranking.score_levenshtein('cat planet 12', 'dogville #2'))
 
     # more title than expected by series data
-    self.assertEqual(45, ranking.score_levenshtein('Dogville #2 (scanned by cats)', 'Dogville', 2.0))
+    self.assertEqual(45, ranking.score_levenshtein('dogville #2 (scanned by cats)', 'dogville #2'))
 
     # matches expected title
-    self.assertEqual(0, ranking.score_levenshtein('dogville #2', 'Dogville', 2.0))
-    self.assertEqual(0, ranking.score_levenshtein('Dogville #2', 'Dogville', 2.0))
-    self.assertEqual(0, ranking.score_levenshtein('  Dogville #2  ', 'Dogville', 2.0))
+    self.assertEqual(0, ranking.score_levenshtein('dogville #2', 'dogville #2'))
 
 
 def mock_date(year):
