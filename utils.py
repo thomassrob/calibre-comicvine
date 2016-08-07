@@ -61,6 +61,8 @@ class TokenBucket(object):
             self.params['update'] = now
     return self.params['tokens']
 
+token_bucket = TokenBucket()
+
 def retry_on_comicvine_error(retries=2):
   """
   Decorator for functions that access the comicvine api.
@@ -79,6 +81,7 @@ def retry_on_comicvine_error(retries=2):
       If retries is exceeded will raise the original exception.
       """
       for retry in range(1,retries+1):
+        token_bucket.consume()
         try:
           return target_function(*args, **kwargs)
         except RateLimitExceededError:

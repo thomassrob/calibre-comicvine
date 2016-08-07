@@ -13,7 +13,6 @@ from calibre.ebooks.metadata.opf2 import metadata_to_opf
 from calibre.ebooks.metadata.sources.base import Source
 from calibre.utils.config import OptionParser
 import calibre.utils.logging as calibre_logging
-from calibre_plugins.comicvine import pycomicvine
 from calibre_plugins.comicvine.config import PREFS
 from calibre_plugins.comicvine import ranking, utils
 
@@ -38,10 +37,6 @@ class Comicvine(Source):
     self.logger.addHandler(utils.CalibreHandler(logging.DEBUG))
     self._qlock = threading.RLock()
     Source.__init__(self, *args, **kwargs)
-
-  def initialize(self):
-    self.token_bucket = utils.TokenBucket()
-    pycomicvine.hook_register('pre_request_hook', self.token_bucket.consume)
 
   def config_widget(self):
     from calibre_plugins.comicvine.config import ConfigWidget
