@@ -41,8 +41,24 @@ class ConfigWidget(QWidget):
     self.layout.addWidget(threads_label, 2, 0)
     self.layout.addWidget(self.threads_msg, 2, 1)
 
+    self.request_rate_msg = QLineEdit(self)
+    self.request_rate_msg.setText(unicode(PREFS['requests_rate']))
+    request_rate_label = QLabel('&Request rate (per second):')
+    request_rate_label.setBuddy(self.request_rate_msg)
+    self.layout.addWidget(request_rate_label, 3, 0)
+    self.layout.addWidget(self.request_rate_msg, 3, 1)
+
+    self.request_burst_msg = QLineEdit(self)
+    self.request_burst_msg.setText(unicode(PREFS['requests_burst']))
+    request_burst_label = QLabel('&Request burst size:')
+    request_burst_label.setBuddy(self.request_burst_msg)
+    self.layout.addWidget(request_burst_label, 4, 0)
+    self.layout.addWidget(self.request_burst_msg, 4, 1)
+
   def save_settings(self):
     """Apply new settings value"""
     PREFS['api_key'] = unicode(self.key_msg.text())
     PREFS['worker_threads'] = int(self.threads_msg.text())
+    PREFS['requests_rate'] = float(self.request_rate_msg.text())
+    PREFS['requests_burst'] = int(self.request_burst_msg.text())
     pycomicvine.api_key = PREFS['api_key']
