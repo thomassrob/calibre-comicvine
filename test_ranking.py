@@ -12,11 +12,23 @@ class TestRanking(unittest.TestCase):
                                  title_tokens=['dogville'])
     self.assertEqual(29.0, result)
 
-  def test_score_title_float_index(self):
+  def test_score_title_float_series_index(self):
     result = ranking.score_title(metadata=mock_metadata('Dogville', 2.1),
                                  title='Dogville #2.1',
                                  title_tokens=['dogville'])
     self.assertEqual(8.0, result)
+
+  def test_score_title_series_index_mismatch_float_title(self):
+    result = ranking.score_title(metadata=mock_metadata('Dogville', 2.0),
+                                 title='Dogville #2.1',
+                                 title_tokens=['dogville'])
+    self.assertEqual(26.0, result)
+
+  def test_score_title_float_index_mismatch_int_title(self):
+    result = ranking.score_title(metadata=mock_metadata('Dogville', 2.1),
+                                 title='Dogville #2',
+                                 title_tokens=['dogville'])
+    self.assertEqual(29.0, result)
 
   def test_score_title_with_matching_year(self):
     result = ranking.score_title(metadata=mock_metadata('Dogville', 2.0, mock_date(2010)),
@@ -93,6 +105,25 @@ class TestRanking(unittest.TestCase):
 
     # matching year and publish date
     self.assertEqual(0, ranking.score_publish_date('Dogville #2 (2000)', mock_date(2000)))
+
+  def test_score_title_tokens(self):
+    # no title tokens
+    self.assertEqual(0, ranking.score_title_tokens('Dogville 002', 'Dogville', 2.0, []))
+
+    # more tokens expected than are present in title
+    self.assertEqual(44, ranking.score_title_tokens('Dogville #2', 'Dogville', 2.0, ['dogville', 'awakening']))
+
+    # between similar title and series data
+    self.assertEqual(28, ranking.score_title_tokens('Dogville 002', 'Dogville', 2.0, ['dogville']))
+    self.assertEqual(70, ranking.score_title_tokens('Cat Planet 12', 'Dogville', 2.0, ['dogville']))
+
+    # more title than expected by series data
+    self.assertEqual(59, ranking.score_title_tokens('Dogville 002 (scanned by cats)', 'Dogville', 2.0, ['dogville']))
+
+    # contains all tokens, matches expected title
+    self.assertEqual(17, ranking.score_title_tokens('Dogville #2', 'Dogville', 2.0, ['dogville']))
+    self.assertEqual(29, ranking.score_title_tokens('  Dogville #2  ', 'Dogville', 2.0, ['dogville']))
+    self.assertEqual(30, ranking.score_title_tokens('Dogville #2 (2000)', 'Dogville', 2.0, ['dogville']))
 
 
 def mock_date(year):
