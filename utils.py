@@ -5,13 +5,15 @@ import logging
 import re
 
 from calibre.ebooks.metadata.book.base import Metadata
-from calibre.utils import logging as calibre_logging # pylint: disable=W0404
+from calibre.utils import logging as calibre_logging  # pylint: disable=W0404
 from calibre_plugins.comicvine.client import PyComicvineWrapper
+
 
 class CalibreHandler(logging.Handler):
   """
   Python logging handler that directs messages to the calibre logging interface.
   """
+
   def emit(self, record):
     level = getattr(calibre_logging, record.levelname)
     calibre_logging.default_log.prints(level, record.getMessage())
@@ -37,6 +39,7 @@ def build_meta(log, issue_id):
     meta.publisher = issue.volume.publisher.name
   meta.pubdate = issue.store_date or issue.cover_date
   return meta
+
 
 def find_volume_ids(title_tokens, log, volume_id=None):
   """Find the volume IDs of candidate volumes that match the title string."""
