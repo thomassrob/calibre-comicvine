@@ -98,8 +98,8 @@ def score_issue_number(title, issue_number, series_index):
   score = 0
   if issue_number is not None and series_index != issue_number:
     score += 50
-  if str(series_index) not in title:
-    # Penalize entries where the issue number is not in the title.
+  if format_canonical_issue_number(series_index) not in title:
+    # Penalize entries where the issue number (or at least its formatted substring) is not in the title.
     score += 10
   return score
 
@@ -126,8 +126,11 @@ def sanitize_title(title):
 
 
 def format_canonical_title(series, series_index):
+  return ('%s #%s' % (series, format_canonical_issue_number(series_index))).lower().strip()
+
+
+def format_canonical_issue_number(series_index):
   if int(series_index) == float(series_index):
-    formatted_number = '#%d' % series_index
+    return '%d' % series_index
   else:
-    formatted_number = ('#%f' % series_index).rstrip('0')
-  return ('%s %s' % (series, formatted_number)).lower().strip()
+    return ('%f' % series_index).rstrip('0')
