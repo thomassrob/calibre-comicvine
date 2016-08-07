@@ -254,12 +254,18 @@ def normalised_title(query, title):
   return issue_number, title_tokens
 
 
-def find_authors(query, authors, log):
-  """Find people that match the author string."""
-  if authors:
-    return PyComicvineWrapper(log).search_for_authors(query.get_author_tokens(authors))
+def find_author_issue_ids(query, authors, log):
+  """
+  Find the union of issue IDs for all people that match the first author provided.
+  """
+  if authors and authors != ['Unknown']:
+    candidate_authors = PyComicvineWrapper(log).search_for_authors(query.get_author_tokens(authors[:1]))
+    issue_ids = set()
+    for author in candidate_authors:
+      issue_ids.update(set([issue.id for issue in author.issues]))
+    return issue_ids
   else:
-    return []
+    return None
 
 
 def cover_urls(comicvine_id, log, get_best_cover=False):

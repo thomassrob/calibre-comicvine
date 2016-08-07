@@ -148,14 +148,9 @@ class Comicvine(Source):
       # Look up candidate issue IDs based on issue number
       candidate_issue_ids = utils.find_issue_ids(candidate_volume_ids, issue_number, log)
 
-      # Look up candidate authors
-      candidate_authors = utils.find_authors(self, authors, log)
-
       # Refine issue selection based on authors
-      if candidate_authors:
-        author_issue_ids = set()
-        for author in candidate_authors:
-          author_issue_ids.update(set([issue.id for issue in author.issues]))
+      author_issue_ids = utils.find_author_issue_ids(self, authors, log)
+      if author_issue_ids is not None:
         candidate_issue_ids = author_issue_ids.intersection(candidate_issue_ids)
 
       # Queue candidates
