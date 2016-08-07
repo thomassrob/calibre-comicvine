@@ -145,14 +145,13 @@ def find_volume_ids(title_tokens, log, volume_id=None):
 @retry_on_cv_error()
 def find_issues(candidate_volume_ids, issue_number, log):
   '''Find issues in candidate volumes matching issue_number'''
-  candidate_issues = []
   issue_filter = ['volume:%s' % (
     '|'.join(str(id) for id in candidate_volume_ids))]
   if issue_number is not None:
     issue_filter.append('issue_number:%s' % issue_number)
   filter_string = ','.join(issue_filter)
   log.debug('Searching for Issues(%s)' % filter_string)
-  candidate_issues = candidate_issues + list(
+  candidate_issues = list(
     pycomicvine.Issues(
       filter=filter_string, field_list=[
         'id', 'name', 'volume', 'issue_number', 'description',
