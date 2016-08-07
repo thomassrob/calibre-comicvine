@@ -104,7 +104,7 @@ def build_meta(log, issue_id):
   if not issue or not issue.volume:
     log.warn('Unable to load Issue(%d)' % issue_id)
     return None
-  title = '%s #%s' %  (issue.volume.name, issue.issue_number)
+  title = '%s #%s' % (issue.volume.name, issue.issue_number)
   if issue.name:
     title = title + ': %s' % (issue.name)
   authors = [p.name for p in issue.person_credits]
