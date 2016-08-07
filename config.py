@@ -1,6 +1,6 @@
-'''
+"""
 Configuration for the Comicvine metadata source
-'''
+"""
 import time
 
 from PyQt5.Qt import QWidget, QGridLayout, QLabel, QLineEdit
@@ -17,8 +17,10 @@ PREFS.defaults['requests_tokens'] = 0
 PREFS.defaults['requests_update'] = time.time()
 pycomicvine.api_key = PREFS['api_key']
 
+
 class ConfigWidget(QWidget):
-  'Configuration widget'
+  """Configuration widget"""
+
   def __init__(self):
     QWidget.__init__(self)
     self.layout = QGridLayout()
@@ -40,8 +42,7 @@ class ConfigWidget(QWidget):
     self.layout.addWidget(self.threads_msg, 2, 1)
 
   def save_settings(self):
-    'Apply new settings value'
+    """Apply new settings value"""
     PREFS['api_key'] = unicode(self.key_msg.text())
     PREFS['worker_threads'] = int(self.threads_msg.text())
     pycomicvine.api_key = PREFS['api_key']
-
