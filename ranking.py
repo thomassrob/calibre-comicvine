@@ -66,13 +66,17 @@ def score_title_tokens(title, series, series_index, title_tokens):
   for token in title_tokens:
     if token not in series.lower():
       score += 10
-    try:
-      volume = '%s #%s' % (series.lower(), series_index)
-      similarity = Levenshtein.ratio(unicode(volume), unicode(title))
-      score += 100 - int(100 * similarity)
-    except NameError:
-      pass
+    score += score_levenshtein(title, series, series_index)
   return score
+
+
+def score_levenshtein(title, series, series_index):
+  try:
+    volume = '%s #%s' % (series.lower(), series_index)
+    similarity = Levenshtein.ratio(unicode(volume), unicode(title))
+    return 100 - int(100 * similarity)
+  except NameError:
+    pass
 
 
 def score_title_length(title, series, series_index):
