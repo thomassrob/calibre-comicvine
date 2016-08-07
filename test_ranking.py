@@ -19,22 +19,28 @@ class TestRanking(unittest.TestCase):
     self.assertEqual(8.0, result)
 
   def test_score_title_with_matching_year(self):
-    result = ranking.score_title(metadata=mock_metadata('Dogville', 2.0, 2010),
+    result = ranking.score_title(metadata=mock_metadata('Dogville', 2.0, mock_date(2010)),
                                  title='Dogville #2 (2010)',
                                  title_tokens=['dogville'])
     self.assertEqual(31.0, result)
 
   def test_score_title_with_mismatching_year(self):
-    result = ranking.score_title(metadata=mock_metadata('Dogville', 2.0, 2010),
+    result = ranking.score_title(metadata=mock_metadata('Dogville', 2.0, mock_date(2010)),
                                  title='Dogville #2 (2014)',
                                  title_tokens=['dogville'])
     self.assertEqual(35.0, result)
 
+  def test_score_title_with_missing_year(self):
+    result = ranking.score_title(metadata=mock_metadata('Dogville', 2.0, None),
+                                 title='Dogville #2',
+                                 title_tokens=['dogville'])
+    self.assertEqual(29.0, result)
+
   def test_score_title_with_extra_tokens(self):
-    result = ranking.score_title(metadata=mock_metadata('Dogville', 2.0, 2010),
-                                 title='Dogville #2 (2014)',
+    result = ranking.score_title(metadata=mock_metadata('Dogville', 2.0),
+                                 title='Dogville #2',
                                  title_tokens=['dogville', 'awakening'])
-    self.assertEqual(65.0, result)
+    self.assertEqual(56.0, result)
 
   def test_score_title_issue_number_does_not_match_series_index(self):
     result = ranking.score_title(metadata=mock_metadata('Dogville', 2.0),
@@ -66,12 +72,19 @@ class TestRanking(unittest.TestCase):
     self.assertEqual(79.0, result)
 
 
-def mock_metadata(series, series_index, year=2000, comments=''):
+def mock_date(year):
+  if year is None:
+    return None
+  else:
+    return type('Date', (object,), {'year': year})
+
+
+def mock_metadata(series, series_index, publish_date=mock_date(2000), comments=''):
   return type('Metadata',
               (object,),
               {
                 'series': series,
                 'series_index': series_index,
-                'pubdate': type('Date', (object,), {'year': year}),
+                'pubdate': publish_date,
                 'comments': comments,
               })
