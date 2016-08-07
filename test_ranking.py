@@ -40,13 +40,13 @@ class TestRanking(unittest.TestCase):
     result = ranking.score_title(metadata=mock_metadata('Dogville', 2.0, mock_date(2010)),
                                  title='Dogville #2 (2010)',
                                  title_tokens=['dogville'])
-    self.assertEqual(20, result)
+    self.assertEqual(21, result)
 
   def test_score_title_with_mismatching_year(self):
     result = ranking.score_title(metadata=mock_metadata('Dogville', 2.0, mock_date(2010)),
                                  title='Dogville #2 (2014)',
                                  title_tokens=['dogville'])
-    self.assertEqual(24, result)
+    self.assertEqual(25, result)
 
   def test_score_title_with_missing_publish_date_and_year(self):
     result = ranking.score_title(metadata=mock_metadata('Dogville', 2.0, None),
@@ -58,7 +58,7 @@ class TestRanking(unittest.TestCase):
     result = ranking.score_title(metadata=mock_metadata('Dogville', 2.0, None),
                                  title='Dogville #2 (2014)',
                                  title_tokens=['dogville'])
-    self.assertEqual(30, result)
+    self.assertEqual(31, result)
 
   def test_score_title_with_extra_tokens(self):
     result = ranking.score_title(metadata=mock_metadata('Dogville', 2.0),

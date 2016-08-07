@@ -93,7 +93,7 @@ def score_levenshtein(title, series, series_index):
 
 def score_title_length(title, series, series_index):
   volume = '%s #%s' % (series.lower(), series_index)
-  return abs(len(volume) - len(title))
+  return abs(len(volume.strip()) - len(title.strip()))
 
 
 def score_issue_number(title, issue_number, series_index):
