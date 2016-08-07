@@ -178,7 +178,7 @@ class Comicvine(Source):
                      title=None, authors=None, identifiers=None,
                      timeout=30, get_best_cover=False):
     if identifiers and 'comicvine' in identifiers:
-      for url in utils.cover_urls(identifiers['comicvine'], get_best_cover):
+      for url in utils.cover_urls(identifiers['comicvine'], log, get_best_cover):
         browser = self.browser
         log.debug('Downloading cover from:', url)
         try:
