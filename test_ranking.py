@@ -58,7 +58,7 @@ class TestRanking(unittest.TestCase):
     result = ranking.score_title(metadata=mock_metadata('Dogville', 2.0),
                                  title='Dogville #2',
                                  title_tokens=['dogville', 'awakening'])
-    self.assertEqual(56.0, result)
+    self.assertEqual(39.0, result)
 
   def test_score_title_issue_number_does_not_match_series_index(self):
     result = ranking.score_title(metadata=mock_metadata('Dogville', 2.0),
@@ -108,22 +108,30 @@ class TestRanking(unittest.TestCase):
 
   def test_score_title_tokens(self):
     # no title tokens
-    self.assertEqual(0, ranking.score_title_tokens('Dogville 002', 'Dogville', 2.0, []))
+    self.assertEqual(0, ranking.score_title_tokens('Dogville', []))
 
     # more tokens expected than are present in title
-    self.assertEqual(44, ranking.score_title_tokens('Dogville #2', 'Dogville', 2.0, ['dogville', 'awakening']))
+    self.assertEqual(10, ranking.score_title_tokens('Dogville', ['awakening']))
+    self.assertEqual(10, ranking.score_title_tokens('Dogville', ['dogville', 'awakening']))
+    self.assertEqual(30, ranking.score_title_tokens('Dogville', ['dogville', 'awakening', 'by', 'cats']))
 
+    # matching
+    self.assertEqual(0, ranking.score_title_tokens('Dogville', ['dogville']))
+    self.assertEqual(0, ranking.score_title_tokens('  Dogville  ', ['dogville']))
+
+  def test_score_levenshtein(self):
     # between similar title and series data
-    self.assertEqual(28, ranking.score_title_tokens('Dogville 002', 'Dogville', 2.0, ['dogville']))
-    self.assertEqual(70, ranking.score_title_tokens('Cat Planet 12', 'Dogville', 2.0, ['dogville']))
+    self.assertEqual(28, ranking.score_levenshtein('Dogville 002', 'Dogville', 2.0))
+
+    # between very dissimilar title and series data
+    self.assertEqual(70, ranking.score_levenshtein('Cat Planet 12', 'Dogville', 2.0))
 
     # more title than expected by series data
-    self.assertEqual(59, ranking.score_title_tokens('Dogville 002 (scanned by cats)', 'Dogville', 2.0, ['dogville']))
+    self.assertEqual(53, ranking.score_levenshtein('Dogville #2 (scanned by cats)', 'Dogville', 2.0))
 
-    # contains all tokens, matches expected title
-    self.assertEqual(17, ranking.score_title_tokens('Dogville #2', 'Dogville', 2.0, ['dogville']))
-    self.assertEqual(29, ranking.score_title_tokens('  Dogville #2  ', 'Dogville', 2.0, ['dogville']))
-    self.assertEqual(30, ranking.score_title_tokens('Dogville #2 (2000)', 'Dogville', 2.0, ['dogville']))
+    # matches expected title
+    self.assertEqual(17, ranking.score_levenshtein('Dogville #2', 'Dogville', 2.0))
+    self.assertEqual(29, ranking.score_levenshtein('  Dogville #2  ', 'Dogville', 2.0))
 
 
 def mock_date(year):

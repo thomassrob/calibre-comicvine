@@ -42,7 +42,8 @@ def score_title(metadata, title=None, issue_number=None, title_tokens=None):
   sanitized_title = strip_year_from_title(title)
 
   return score_publish_date(title, metadata.pubdate) + \
-         score_title_tokens(sanitized_title, metadata.series, metadata.series_index, title_tokens) + \
+         score_title_tokens(metadata.series, title_tokens) + \
+         score_levenshtein(sanitized_title, metadata.series, metadata.series_index) + \
          score_title_length(sanitized_title, metadata.series, metadata.series_index) + \
          score_issue_number(sanitized_title, issue_number, metadata.series_index) + \
          score_comments(metadata.comments)
@@ -61,12 +62,11 @@ def score_publish_date(title, publish_date):
     return 10
 
 
-def score_title_tokens(title, series, series_index, title_tokens):
+def score_title_tokens(series, title_tokens):
   score = 0
   for token in title_tokens:
     if token not in series.lower():
       score += 10
-    score += score_levenshtein(title, series, series_index)
   return score
 
 
