@@ -69,6 +69,8 @@ def retry_on_comicvine_error(retries=2):
 
   Retries the decorated function on error.
   """
+  pycomicvine.api_key = PREFS['api_key']
+
   def wrap_function(target_function):
     """Closure for the retry function, giving access to decorator arguments."""
     def retry_function(*args, **kwargs):

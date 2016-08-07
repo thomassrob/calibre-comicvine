@@ -6,8 +6,6 @@ import time
 from PyQt5.Qt import QWidget, QGridLayout, QLabel, QLineEdit
 from calibre.utils.config import JSONConfig
 
-from calibre_plugins.comicvine import pycomicvine
-
 PREFS = JSONConfig('plugins/comicvine')
 PREFS.defaults['api_key'] = ''
 PREFS.defaults['worker_threads'] = 16
@@ -15,7 +13,6 @@ PREFS.defaults['requests_rate'] = 0.1
 PREFS.defaults['requests_burst'] = 10
 PREFS.defaults['requests_tokens'] = 0
 PREFS.defaults['requests_update'] = time.time()
-pycomicvine.api_key = PREFS['api_key']
 
 
 class ConfigWidget(QWidget):
@@ -61,4 +58,3 @@ class ConfigWidget(QWidget):
     PREFS['worker_threads'] = int(self.threads_msg.text())
     PREFS['requests_rate'] = float(self.request_rate_msg.text())
     PREFS['requests_burst'] = int(self.request_burst_msg.text())
-    pycomicvine.api_key = PREFS['api_key']
