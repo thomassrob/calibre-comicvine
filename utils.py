@@ -1,6 +1,6 @@
-'''
+"""
 calibre_plugins.comicvine - A calibre metadata source for comicvine
-'''
+"""
 import logging
 import random
 import re
@@ -15,10 +15,9 @@ from calibre_plugins.comicvine.config import PREFS
 from pycomicvine.error import RateLimitExceededError
 
 class CalibreHandler(logging.Handler):
-  '''
-  python logging handler that directs messages to the calibre logging
-  interface
-  '''
+  """
+  Python logging handler that directs messages to the calibre logging interface.
+  """
   def emit(self, record):
     level = getattr(calibre_logging, record.levelname)
     calibre_logging.default_log.prints(level, record.getMessage())
@@ -63,19 +62,22 @@ class TokenBucket(object):
     return self.params['tokens']
 
 def retry_on_cv_error(retries=2):
-  '''Decorator for functions that access the comicvine api. 
+  """
+  Decorator for functions that access the comicvine api.
 
-  Retries the decorated function on error.'''
+  Retries the decorated function on error.
+  """
   def wrap_function(target_function):
-    'Closure for the retry function giving access to decorator arguments.'
+    """Closure for the retry function, giving access to decorator arguments."""
     def retry_function(*args, **kwargs):
-      '''Decorate function to retry on error.
+      """
+      Decorate function to retry on error.
 
       The comicvine API can be a little flaky, so retry on error to make
       sure the error is real.
 
       If retries is exceeded will raise the original exception.
-      '''
+      """
       for retry in range(1,retries+1):
         try:
           return target_function(*args, **kwargs)
@@ -97,7 +99,7 @@ def retry_on_cv_error(retries=2):
 
 @retry_on_cv_error()
 def build_meta(log, issue_id):
-  '''Build metadata record based on comicvine issue_id'''
+  """Build metadata record based on comicvine issue_id."""
   issue = pycomicvine.Issue(issue_id, field_list=[
       'id', 'name', 'volume', 'issue_number', 'person_credits', 'description',
       'store_date', 'cover_date'])
@@ -122,7 +124,7 @@ def build_meta(log, issue_id):
 
 @retry_on_cv_error()
 def find_volume_ids(title_tokens, log, volume_id=None):
-  '''Look up volumes matching title string'''
+  """Find the volume IDs of candidate volumes that match the title string."""
   if volume_id:
     log.debug('Looking up volume: %s' % volume_id)
     volume = pycomicvine.Volume(id=int(volume_id), field_list=['id'])
@@ -144,7 +146,7 @@ def find_volume_ids(title_tokens, log, volume_id=None):
 
 @retry_on_cv_error()
 def find_issue_ids(candidate_volume_ids, issue_number, log):
-  """Find issue IDs in candidate volumes which match the issue_number."""
+  """Find issue IDs in candidate volumes that match the issue_number."""
   filters = ['volume:%s' % ('|'.join(str(id) for id in candidate_volume_ids))]
   if issue_number is not None:
     filters.append('issue_number:%s' % issue_number)
@@ -155,15 +157,15 @@ def find_issue_ids(candidate_volume_ids, issue_number, log):
   return ids
 
 def normalised_title(query, title):
-  '''
-  returns (issue_number,title_tokens)
+  """
+  Returns (issue_number,title_tokens).
   
   This method takes the provided title and breaks it down into
   searchable components.  The issue number should be preceded by a
   '#' mark or it will be treated as a word in the title.  Anything
   provided after the issue number (e.g. a sub-title) will be
   ignored.
-  '''
+  """
   title_tokens = []
   issue_number = None
   replacements = (
@@ -187,7 +189,7 @@ def normalised_title(query, title):
 
 @retry_on_cv_error()
 def find_authors(query, authors, log):
-  '''Find people matching author string'''
+  """Find people that match the author string."""
   candidate_authors = []
   author_name = ' '.join(query.get_author_tokens(authors))
   if author_name and author_name != 'Unknown':
@@ -202,7 +204,7 @@ def find_authors(query, authors, log):
 # generators are always fatal.  Functions that use this should be
 # decorated instead.
 def cover_urls(comicvine_id, get_best_cover=False):
-  'Retrieve cover urls for comic in quality order'
+  """Retrieve cover urls, in quality order."""
   issue = pycomicvine.Issue(int(comicvine_id), field_list=['image'])
   for url in ['super_url', 'medium_url', 'small_url']:
     if url in issue.image:
