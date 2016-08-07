@@ -6,7 +6,6 @@ import re
 
 from calibre.ebooks.metadata.book.base import Metadata
 from calibre.utils import logging as calibre_logging # pylint: disable=W0404
-from calibre_plugins.comicvine import pycomicvine
 from calibre_plugins.comicvine.client import PyComicvineWrapper
 
 class CalibreHandler(logging.Handler):
