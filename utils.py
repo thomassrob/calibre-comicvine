@@ -121,35 +121,33 @@ def build_meta(log, issue_id):
   return meta
 
 @retry_on_cv_error()
-def find_volumes(title_tokens, log, volumeid=None):
+def find_volume_ids(title_tokens, log, volume_id=None):
   '''Look up volumes matching title string'''
-  candidate_volumes = []
-  if volumeid:
-    volumeid = int(volumeid)
-    log.debug('Looking up volume: %d' % volumeid)
-    candidate_volumes = [pycomicvine.Volume(volumeid)]
+  if volume_id:
+    log.debug('Looking up volume: %s' % volume_id)
+    volume = pycomicvine.Volume(id=int(volume_id), field_list=['id'])
+    return [volume.id]
   else:
-    log.debug("Searching for volumes: %s" % (title_tokens))
+    log.debug("Searching for volumes: %s" % title_tokens)
     volume_title = ' AND '.join(title_tokens)
     log.debug('Looking up volume: %s' % volume_title)
-    matches = pycomicvine.Volumes.search(
-        query=volume_title, field_list=['id', 'name', 'count_of_issues',
-                                        'publisher'])
+    candidate_volume_ids = []
+    matches = pycomicvine.Volumes.search(query=volume_title, field_list=['id'])
     for i in range(len(matches)):
       try:
         if matches[i]:
-          candidate_volumes.append(matches[i])
+          candidate_volume_ids.append(matches[i].id)
       except IndexError:
         continue
-  log.debug('found %d volume matches' % len(candidate_volumes))
-  return candidate_volumes
+    log.debug('found %d volume matches' % len(candidate_volume_ids))
+    return candidate_volume_ids
 
 @retry_on_cv_error()
-def find_issues(candidate_volumes, issue_number, log):
+def find_issues(candidate_volume_ids, issue_number, log):
   '''Find issues in candidate volumes matching issue_number'''
   candidate_issues = []
   issue_filter = ['volume:%s' % (
-      '|'.join(str(volume.id) for volume in candidate_volumes))]
+    '|'.join(str(id) for id in candidate_volume_ids))]
   if issue_number is not None:
     issue_filter.append('issue_number:%s' % issue_number)
   filter_string = ','.join(issue_filter)

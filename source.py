@@ -147,14 +147,14 @@ class Comicvine(Source):
 
       (issue_number, title_tokens) = utils.normalised_title(self, title)
 
-      # Look up candidate volumes based on title
-      candidate_volumes = utils.find_volumes(title_tokens, log, volumeid=volume_id)
+      # Look up candidate volume IDs based on title
+      candidate_volume_ids = utils.find_volume_ids(title_tokens, log, volume_id=volume_id)
+
+      # Look up candidate issues
+      candidate_issues = utils.find_issues(candidate_volume_ids, issue_number, log)
 
       # Look up candidate authors
       candidate_authors = utils.find_authors(self, authors, log)
-
-      # Look up candidate issues
-      candidate_issues = utils.find_issues(candidate_volumes, issue_number, log)
 
       # Refine issue selection based on authors
       if candidate_authors:

@@ -42,4 +42,32 @@ if __name__ == '__main__':
         identifiers_test('105747', '18059'),
       ]
     ),
+    (
+      {
+        'title': '',
+        'identifiers': {'comicvine': '105747'},
+      },
+      [
+        title_test('Preacher Special: The Story of You-Know-Who #1: The Story of You-Know-Who',
+                   exact=True),
+        authors_test(['Garth Ennis', 'Richard Case', 'Matt Hollingsworth',
+                      'Clem Robins', 'Glenn Fabry', 'Julie Rottenberg']),
+        series_test('Preacher Special: The Story of You-Know-Who', 1.0),
+        identifiers_test('105747', '18059'),
+      ]
+    ),
+    (
+      {
+        'title': 'Preacher',
+        'identifiers': {'comicvine-volume': '18059'},
+      },
+      [
+        title_test('Preacher Special: The Story of You-Know-Who #1: The Story of You-Know-Who',
+                   exact=True),
+        authors_test(['Garth Ennis', 'Richard Case', 'Matt Hollingsworth',
+                      'Clem Robins', 'Glenn Fabry', 'Julie Rottenberg']),
+        series_test('Preacher Special: The Story of You-Know-Who', 1.0),
+        identifiers_test('105747', '18059'),
+      ]
+    ),
   ])
