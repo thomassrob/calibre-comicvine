@@ -92,6 +92,11 @@ def normalised_title(query, title):
 def find_author_issue_ids(query, authors, log):
   """
   Find the union of issue IDs for all people that match the first author provided.
+
+  Possible return values:
+  None if there were no valid authors provided.
+  Empty set if no issues exist for any matching authors, or if no authors matched the input.
+  Set of issue IDs for all authors matching the first author string.
   """
   if authors and authors != ['Unknown']:
     candidate_authors = PyComicvineWrapper(log).search_for_authors(query.get_author_tokens(authors[:1]))
