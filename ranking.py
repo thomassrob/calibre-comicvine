@@ -83,8 +83,9 @@ def score_levenshtein(title, series, series_index):
   Prefer similar titles using Levenshtein ratio (if module available).
   """
   try:
-    volume = '%s #%s' % (series.lower(), series_index)
-    similarity = Levenshtein.ratio(unicode(volume), unicode(title))
+    volume = '%s #%s' % (series, series_index)
+    similarity = Levenshtein.ratio(unicode(volume.lower().strip()),
+                                   unicode(title.lower().strip()))
     return 100 - int(100 * similarity)
   except NameError:
     return 0

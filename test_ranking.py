@@ -10,7 +10,7 @@ class TestRanking(unittest.TestCase):
     result = ranking.score_title(metadata=mock_metadata('Dogville', 2.0),
                                  title='Dogville #2',
                                  title_tokens=['dogville'])
-    self.assertEqual(29, result)
+    self.assertEqual(21, result)
 
   def test_score_title_no_title(self):
     result = ranking.score_title(metadata=mock_metadata('Dogville', 2.0),
@@ -22,62 +22,62 @@ class TestRanking(unittest.TestCase):
     result = ranking.score_title(metadata=mock_metadata('Dogville', 2.1),
                                  title='Dogville #2.1',
                                  title_tokens=['dogville'])
-    self.assertEqual(8, result)
+    self.assertEqual(0, result)
 
   def test_score_title_series_index_mismatch_float_title(self):
     result = ranking.score_title(metadata=mock_metadata('Dogville', 2.0),
                                  title='Dogville #2.1',
                                  title_tokens=['dogville'])
-    self.assertEqual(26, result)
+    self.assertEqual(18, result)
 
   def test_score_title_float_index_mismatch_int_title(self):
     result = ranking.score_title(metadata=mock_metadata('Dogville', 2.1),
                                  title='Dogville #2',
                                  title_tokens=['dogville'])
-    self.assertEqual(29, result)
+    self.assertEqual(21, result)
 
   def test_score_title_with_matching_year(self):
     result = ranking.score_title(metadata=mock_metadata('Dogville', 2.0, mock_date(2010)),
                                  title='Dogville #2 (2010)',
                                  title_tokens=['dogville'])
-    self.assertEqual(31, result)
+    self.assertEqual(20, result)
 
   def test_score_title_with_mismatching_year(self):
     result = ranking.score_title(metadata=mock_metadata('Dogville', 2.0, mock_date(2010)),
                                  title='Dogville #2 (2014)',
                                  title_tokens=['dogville'])
-    self.assertEqual(35, result)
+    self.assertEqual(24, result)
 
   def test_score_title_with_missing_publish_date_and_year(self):
     result = ranking.score_title(metadata=mock_metadata('Dogville', 2.0, None),
                                  title='Dogville #2',
                                  title_tokens=['dogville'])
-    self.assertEqual(39, result)
+    self.assertEqual(31, result)
 
   def test_score_title_with_missing_publish_date(self):
     result = ranking.score_title(metadata=mock_metadata('Dogville', 2.0, None),
                                  title='Dogville #2 (2014)',
                                  title_tokens=['dogville'])
-    self.assertEqual(41, result)
+    self.assertEqual(30, result)
 
   def test_score_title_with_extra_tokens(self):
     result = ranking.score_title(metadata=mock_metadata('Dogville', 2.0),
                                  title='Dogville #2',
                                  title_tokens=['dogville', 'awakening'])
-    self.assertEqual(39, result)
+    self.assertEqual(31, result)
 
   def test_score_title_issue_number_does_not_match_series_index(self):
     result = ranking.score_title(metadata=mock_metadata('Dogville', 2.0),
                                  title='Dogville #5',
                                  issue_number=5,
                                  title_tokens=['dogville'])
-    self.assertEqual(87, result)
+    self.assertEqual(79, result)
 
   def test_score_title_series_index_not_in_title(self):
     result = ranking.score_title(metadata=mock_metadata('Dogville', 2.0),
                                  title='Dogville #5',
                                  title_tokens=['dogville'])
-    self.assertEqual(37, result)
+    self.assertEqual(29, result)
 
   def test_score_title_generic_comments(self):
     result = ranking.score_title(metadata=mock_metadata(series='Dogville',
@@ -85,7 +85,7 @@ class TestRanking(unittest.TestCase):
                                                         comments='the barkening continues'),
                                  title='Dogville #2',
                                  title_tokens=['dogville'])
-    self.assertEqual(29, result)
+    self.assertEqual(21, result)
 
   def test_score_title_comments_indicating_collection(self):
     result = ranking.score_title(metadata=mock_metadata(series='Dogville',
@@ -93,7 +93,7 @@ class TestRanking(unittest.TestCase):
                                                         comments='this collects issues #1-10'),
                                  title='Dogville #2',
                                  title_tokens=['dogville'])
-    self.assertEqual(79, result)
+    self.assertEqual(71, result)
 
   def test_score_publish_date(self):
     # missing publish date in metadata
@@ -128,18 +128,18 @@ class TestRanking(unittest.TestCase):
 
   def test_score_levenshtein(self):
     # between similar title and series data
-    self.assertEqual(28, ranking.score_levenshtein('Dogville 002', 'Dogville', 2.0))
+    self.assertEqual(20, ranking.score_levenshtein('Dogville 002', 'Dogville', 2.0))
 
     # between very dissimilar title and series data
     self.assertEqual(70, ranking.score_levenshtein('Cat Planet 12', 'Dogville', 2.0))
 
     # more title than expected by series data
-    self.assertEqual(53, ranking.score_levenshtein('Dogville #2 (scanned by cats)', 'Dogville', 2.0))
+    self.assertEqual(48, ranking.score_levenshtein('Dogville #2 (scanned by cats)', 'Dogville', 2.0))
 
     # matches expected title
     self.assertEqual(9, ranking.score_levenshtein('dogville #2', 'Dogville', 2.0))
-    self.assertEqual(17, ranking.score_levenshtein('Dogville #2', 'Dogville', 2.0))
-    self.assertEqual(29, ranking.score_levenshtein('  Dogville #2  ', 'Dogville', 2.0))
+    self.assertEqual(9, ranking.score_levenshtein('Dogville #2', 'Dogville', 2.0))
+    self.assertEqual(9, ranking.score_levenshtein('  Dogville #2  ', 'Dogville', 2.0))
 
 
 def mock_date(year):
