@@ -12,6 +12,12 @@ class TestRanking(unittest.TestCase):
                                  title_tokens=['dogville'])
     self.assertEqual(29.0, result)
 
+  def test_score_title_float_index(self):
+    result = ranking.score_title(metadata=mock_metadata('Dogville', 2.1),
+                                 title='Dogville #2.1',
+                                 title_tokens=['dogville'])
+    self.assertEqual(8.0, result)
+
   def test_score_title_with_matching_year(self):
     result = ranking.score_title(metadata=mock_metadata('Dogville', 2.0, 2010),
                                  title='Dogville #2 (2010)',
