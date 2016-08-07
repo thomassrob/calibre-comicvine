@@ -6,6 +6,12 @@ import ranking
 
 
 class TestRanking(unittest.TestCase):
+  def test_score_title_int_series_index(self):
+    result = ranking.score_title(metadata=mock_metadata('Dogville', 2),
+                                 title='Dogville #2',
+                                 title_tokens=['dogville'])
+    self.assertEqual(0, result)
+
   def test_score_title(self):
     result = ranking.score_title(metadata=mock_metadata('Dogville', 2.0),
                                  title='Dogville #2',
