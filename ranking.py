@@ -39,21 +39,26 @@ def score_title(metadata, title=None, issue_number=None, title_tokens=None):
   """
   Calculate title-matching score.
   """
-  score = 0
+  sanitized_title = strip_year_from_title(title)
+
+  return score_publish_date(title, metadata.pubdate) + \
+         score_title_tokens(sanitized_title, metadata.series, metadata.series_index, title_tokens) + \
+         score_title_length(sanitized_title, metadata.series, metadata.series_index) + \
+         score_issue_number(sanitized_title, issue_number, metadata.series_index) + \
+         score_comments(metadata.comments)
+
+
+def score_publish_date(title, publish_date):
   match_year = re.compile(r'\((\d{4})\)')
   year = match_year.search(title)
   if year:
-    title = match_year.sub('', title)
-    if metadata.pubdate:
-      score += abs(metadata.pubdate.year - int(year.group(1)))
+    if publish_date:
+      return abs(publish_date.year - int(year.group(1)))
     else:
-      score += 10  # penalise entries with no publication date
-
-  return score + \
-         score_title_tokens(title, metadata.series, metadata.series_index, title_tokens) + \
-         score_title_length(title, metadata.series, metadata.series_index) + \
-         score_issue_number(title, issue_number, metadata.series_index) + \
-         score_comments(metadata.comments)
+      # penalise entries with no publication date
+      return 10
+  else:
+    return 0
 
 
 def score_title_tokens(title, series, series_index, title_tokens):
@@ -95,3 +100,11 @@ def score_comments(comments):
     return 50
   else:
     return 0
+
+
+def strip_year_from_title(title):
+  match_year = re.compile(r'\((\d{4})\)')
+  if match_year.search(title):
+    return match_year.sub('', title)
+  else:
+    return title
