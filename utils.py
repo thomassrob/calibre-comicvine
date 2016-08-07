@@ -183,6 +183,19 @@ class PyComicvineWrapper(object):
       return None
 
   @retry_on_comicvine_error()
+  def search_for_authors(self, author_tokens):
+    """Find people that match the author tokens."""
+    if author_tokens and author_tokens != ['Unknown']:
+      filters = ['name:%s' % author_token for author_token in author_tokens]
+      filter_string = ','.join(filters)
+      self.debug("Searching for author: %s" % filter_string)
+      authors = pycomicvine.People(filter=filter_string, field_list=['id'])
+      self.debug("%d matches found" % len(authors))
+      return authors
+    else:
+      return []
+
+  @retry_on_comicvine_error()
   def search_for_issue_ids(self, filters):
     filter_string = ','.join(filters)
     self.debug('Searching for issues: %s' % filter_string)
@@ -240,18 +253,14 @@ def normalised_title(query, title):
     title_tokens.append(token.lower())
   return issue_number, title_tokens
 
-@retry_on_comicvine_error()
+
 def find_authors(query, authors, log):
   """Find people that match the author string."""
-  candidate_authors = []
-  author_name = ' '.join(query.get_author_tokens(authors))
-  if author_name and author_name != 'Unknown':
-    log.debug("Searching for author: %s" % author_name)
-    candidate_authors = pycomicvine.People(
-      filter='name:%s' % (author_name),
-      field_list=['id', 'name'])
-    log.debug("%d matches found" % len(candidate_authors))
-  return candidate_authors
+  if authors:
+    return PyComicvineWrapper(log).search_for_authors(query.get_author_tokens(authors))
+  else:
+    return []
+
 
 def cover_urls(comicvine_id, log, get_best_cover=False):
   """Retrieve cover urls, in quality order."""
