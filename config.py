@@ -6,6 +6,7 @@ import time
 from PyQt5.Qt import QWidget, QGridLayout, QLabel, QLineEdit, QComboBox
 from calibre.utils.config import JSONConfig
 
+_MAX_WORKER_THREADS = 32
 _MAX_BURST_SIZE = 32
 
 PREFS = JSONConfig('plugins/comicvine')
@@ -30,8 +31,10 @@ class ConfigWidget(QWidget):
     self.api_key.setText(PREFS['api_key'])
     self.add_labeled_widget('&API key:', self.api_key, 1)
 
-    self.worker_threads = QLineEdit(self)
-    self.worker_threads.setText(unicode(PREFS['worker_threads']))
+    worker_thread_range = range(1, _MAX_WORKER_THREADS)
+    self.worker_threads = QComboBox(self)
+    self.worker_threads.addItems([str(value) for value in worker_thread_range])
+    self.worker_threads.setCurrentIndex(worker_thread_range.index(PREFS['worker_threads']))
     self.add_labeled_widget('&Worker threads:', self.worker_threads, 2)
 
     self.request_rate = QLineEdit(self)
@@ -53,6 +56,6 @@ class ConfigWidget(QWidget):
   def save_settings(self):
     """Apply new settings value"""
     PREFS['api_key'] = unicode(self.api_key.text())
-    PREFS['worker_threads'] = int(self.worker_threads.text())
+    PREFS['worker_threads'] = int(self.worker_threads.currentText())
     PREFS['requests_rate'] = float(self.request_rate.text())
     PREFS['requests_burst'] = int(self.request_burst.currentText())
