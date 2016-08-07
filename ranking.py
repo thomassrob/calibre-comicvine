@@ -126,4 +126,8 @@ def strip_year_from_title(title):
 
 
 def format_canonical_title(series, series_index):
-  return ('%s #%s' % (series, series_index)).lower().strip()
+  if int(series_index) == float(series_index):
+    formatted_number = '#%d' % series_index
+  else:
+    formatted_number = ('#%f' % series_index).rstrip('0')
+  return ('%s %s' % (series, formatted_number)).lower().strip()
