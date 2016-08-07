@@ -3,8 +3,10 @@ Configuration for the Comicvine metadata source
 """
 import time
 
-from PyQt5.Qt import QWidget, QGridLayout, QLabel, QLineEdit
+from PyQt5.Qt import QWidget, QGridLayout, QLabel, QLineEdit, QComboBox
 from calibre.utils.config import JSONConfig
+
+_MAX_BURST_SIZE = 32
 
 PREFS = JSONConfig('plugins/comicvine')
 PREFS.defaults['api_key'] = ''
@@ -24,37 +26,33 @@ class ConfigWidget(QWidget):
     self.layout.setSpacing(10)
     self.setLayout(self.layout)
 
-    self.key_msg = QLineEdit(self)
-    self.key_msg.setText(PREFS['api_key'])
-    key_label = QLabel('&API key:')
-    key_label.setBuddy(self.key_msg)
-    self.layout.addWidget(key_label, 1, 0)
-    self.layout.addWidget(self.key_msg, 1, 1)
+    self.api_key = QLineEdit(self)
+    self.api_key.setText(PREFS['api_key'])
+    self.add_labeled_widget('&API key:', self.api_key, 1)
 
-    self.threads_msg = QLineEdit(self)
-    self.threads_msg.setText(unicode(PREFS['worker_threads']))
-    threads_label = QLabel('&Worker threads:')
-    threads_label.setBuddy(self.threads_msg)
-    self.layout.addWidget(threads_label, 2, 0)
-    self.layout.addWidget(self.threads_msg, 2, 1)
+    self.worker_threads = QLineEdit(self)
+    self.worker_threads.setText(unicode(PREFS['worker_threads']))
+    self.add_labeled_widget('&Worker threads:', self.worker_threads, 2)
 
-    self.request_rate_msg = QLineEdit(self)
-    self.request_rate_msg.setText(unicode(PREFS['requests_rate']))
-    request_rate_label = QLabel('&Request rate (per second):')
-    request_rate_label.setBuddy(self.request_rate_msg)
-    self.layout.addWidget(request_rate_label, 3, 0)
-    self.layout.addWidget(self.request_rate_msg, 3, 1)
+    self.request_rate = QLineEdit(self)
+    self.request_rate.setText(unicode(PREFS['requests_rate']))
+    self.add_labeled_widget('&Request rate (per second):', self.request_rate, 3)
 
-    self.request_burst_msg = QLineEdit(self)
-    self.request_burst_msg.setText(unicode(PREFS['requests_burst']))
-    request_burst_label = QLabel('&Request burst size:')
-    request_burst_label.setBuddy(self.request_burst_msg)
-    self.layout.addWidget(request_burst_label, 4, 0)
-    self.layout.addWidget(self.request_burst_msg, 4, 1)
+    burst_range = range(1, _MAX_BURST_SIZE)
+    self.request_burst = QComboBox(self)
+    self.request_burst.addItems([str(value) for value in burst_range])
+    self.request_burst.setCurrentIndex(burst_range.index(PREFS['requests_burst']))
+    self.add_labeled_widget('&Request burst size:', self.request_burst, 4)
+
+  def add_labeled_widget(self, label_text, widget, index):
+    label = QLabel(label_text)
+    label.setBuddy(widget)
+    self.layout.addWidget(label, index, 0)
+    self.layout.addWidget(widget, index, 1)
 
   def save_settings(self):
     """Apply new settings value"""
-    PREFS['api_key'] = unicode(self.key_msg.text())
-    PREFS['worker_threads'] = int(self.threads_msg.text())
-    PREFS['requests_rate'] = float(self.request_rate_msg.text())
-    PREFS['requests_burst'] = int(self.request_burst_msg.text())
+    PREFS['api_key'] = unicode(self.api_key.text())
+    PREFS['worker_threads'] = int(self.worker_threads.text())
+    PREFS['requests_rate'] = float(self.request_rate.text())
+    PREFS['requests_burst'] = int(self.request_burst.currentText())
