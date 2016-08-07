@@ -34,7 +34,7 @@ class TestRanking(unittest.TestCase):
     result = ranking.score_title(metadata=mock_metadata('Dogville', 2.0, None),
                                  title='Dogville #2',
                                  title_tokens=['dogville'])
-    self.assertEqual(29.0, result)
+    self.assertEqual(39.0, result)
 
   def test_score_title_with_missing_publish_date(self):
     result = ranking.score_title(metadata=mock_metadata('Dogville', 2.0, None),
@@ -78,17 +78,21 @@ class TestRanking(unittest.TestCase):
     self.assertEqual(79.0, result)
 
   def test_score_publish_date(self):
-    # missing data
-    self.assertEqual(0, ranking.score_publish_date('Dogville #2', None))
+    # missing publish date in metadata
+    self.assertEqual(10, ranking.score_publish_date('Dogville #2', None))
     self.assertEqual(10, ranking.score_publish_date('Dogville #2 (2000)', None))
+
+    # no year in the title
     self.assertEqual(0, ranking.score_publish_date('Dogville #2', mock_date(2000)))
 
     # mismatched data
-    self.assertEqual(0, ranking.score_publish_date('Dogville #2 (2000)', mock_date(2000)))
     self.assertEqual(16, ranking.score_publish_date('Dogville #2 (2000)', mock_date(1984)))
     self.assertEqual(1, ranking.score_publish_date('Dogville #2 (2000)', mock_date(1999)))
     self.assertEqual(1, ranking.score_publish_date('Dogville #2 (2000)', mock_date(2001)))
     self.assertEqual(16, ranking.score_publish_date('Dogville #2 (2000)', mock_date(2016)))
+
+    # matching year and publish date
+    self.assertEqual(0, ranking.score_publish_date('Dogville #2 (2000)', mock_date(2000)))
 
 
 def mock_date(year):

@@ -49,16 +49,16 @@ def score_title(metadata, title=None, issue_number=None, title_tokens=None):
 
 
 def score_publish_date(title, publish_date):
-  match_year = re.compile(r'\((\d{4})\)')
-  year = match_year.search(title)
-  if year:
-    if publish_date:
+  if publish_date:
+    match_year = re.compile(r'\((\d{4})\)')
+    year = match_year.search(title)
+    if year:
       return abs(publish_date.year - int(year.group(1)))
     else:
-      # penalise entries with no publication date
-      return 10
+      return 0
   else:
-    return 0
+    # penalise entries with no publication date
+    return 10
 
 
 def score_title_tokens(title, series, series_index, title_tokens):
