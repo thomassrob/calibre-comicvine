@@ -12,6 +12,12 @@ class TestRanking(unittest.TestCase):
                                  title_tokens=['dogville'])
     self.assertEqual(29, result)
 
+  def test_score_title_no_title(self):
+    result = ranking.score_title(metadata=mock_metadata('Dogville', 2.0),
+                                 title=None,
+                                 title_tokens=[])
+    self.assertEqual(0, result)
+
   def test_score_title_float_series_index(self):
     result = ranking.score_title(metadata=mock_metadata('Dogville', 2.1),
                                  title='Dogville #2.1',

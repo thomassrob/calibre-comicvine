@@ -12,22 +12,27 @@ except ImportError:
 
 def keygen(metadata, title=None, authors=None, identifiers=None, **kwargs):
   """
-  Implement multi-result comparisons.
+  Implement multi-result comparisons. Lower results are more preferred.
 
-  1. Prefer an entry where the comicvine id matches
-  2. Prefer similar titles using Levenshtein ratio (if module available)
-  3. Penalise entries where the issue number is not in the title
+  If the comicvine id matches, return 0.
+
+  Otherwise, score the title and authors.
   4. Prefer matching authors (the more matches, the higher the preference)
   """
-  score = 0
   if identifiers:
     try:
       if metadata.get_identifier('comicvine') == identifiers['comicvine']:
         return 0
     except (KeyError, AttributeError):
       pass
-  if title:
-    score += score_title(metadata, title=title, **kwargs)
+  return score_title(metadata, title=title, **kwargs) + score_authors(metadata, authors)
+
+
+def score_authors(metadata, authors):
+  """
+  The more mismatches in the already-set authors, the higher the score, and the less likely we are to use this result.
+  """
+  score = 0
   if authors:
     for author in authors:
       if author not in metadata.authors:
@@ -39,6 +44,9 @@ def score_title(metadata, title=None, issue_number=None, title_tokens=None):
   """
   Calculate title-matching score.
   """
+  if title is None:
+    return 0
+
   sanitized_title = strip_year_from_title(title)
 
   return score_publish_date(title, metadata.pubdate) + \
@@ -71,6 +79,9 @@ def score_title_tokens(series, title_tokens):
 
 
 def score_levenshtein(title, series, series_index):
+  """
+  Prefer similar titles using Levenshtein ratio (if module available).
+  """
   try:
     volume = '%s #%s' % (series.lower(), series_index)
     similarity = Levenshtein.ratio(unicode(volume), unicode(title))
@@ -89,6 +100,7 @@ def score_issue_number(title, issue_number, series_index):
   if issue_number is not None and series_index != issue_number:
     score += 50
   if str(series_index) not in title:
+    # Penalize entries where the issue number is not in the title.
     score += 10
   return score
 
