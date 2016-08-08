@@ -5,6 +5,8 @@ import logging
 import random
 import time
 import threading
+import pyfscache
+import os
 
 from calibre.utils.config import JSONConfig
 from calibre_plugins.comicvine import pycomicvine
@@ -98,10 +100,35 @@ def retry_on_comicvine_error(retries=2):
   return wrap_function
 
 
+def cache_comicvine(cache_name):
+  """
+  Decorator for instance methods on the comicvine wrapper.
+  """
+
+  def wrap_function(target_function):
+    temp_directory = os.getenv('TMPDIR')
+    path = '%s/calibre-comicvine/%s' % (temp_directory, cache_name)
+    cache_it = pyfscache.FSCache(path, hours=1)
+
+    def instance_function(*args, **kwargs):
+      self = args[0]
+
+      @cache_it
+      def cached_function(*args, **kwargs):
+        return target_function(self, *args, **kwargs)
+
+      return cached_function(*args[1:], **kwargs)
+
+    return instance_function
+
+  return wrap_function
+
+
 class PyComicvineWrapper(object):
   def __init__(self, log):
     self.log = log
 
+  @cache_comicvine('lookup_volume_id')
   @retry_on_comicvine_error()
   def lookup_volume_id(self, volume_id):
     self.debug('Looking up volume: %d' % volume_id)
@@ -164,6 +191,7 @@ class PyComicvineWrapper(object):
     else:
       return []
 
+  @cache_comicvine('search_for_issue_ids')
   @retry_on_comicvine_error()
   def search_for_issue_ids(self, filters):
     filter_string = ','.join(filters)
@@ -172,6 +200,7 @@ class PyComicvineWrapper(object):
     self.debug('%d issue ID matches found: %s' % (len(ids), ids))
     return ids
 
+  @cache_comicvine('search_for_volume_ids')
   @retry_on_comicvine_error()
   def search_for_volume_ids(self, title_tokens):
     query_string = ' AND '.join(title_tokens)

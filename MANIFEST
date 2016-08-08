@@ -9,3 +9,6 @@ source.py
 utils.py
 pycomicvine/__init__.py
 pycomicvine/error.py
+pyfscache/__init__.py
+pyfscache/_version.py
+pyfscache/fscache.py
