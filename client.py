@@ -107,19 +107,23 @@ def cache_comicvine(cache_name):
 
   def wrap_function(target_function):
     temp_directory = os.getenv('TMPDIR')
-    path = '%s/calibre-comicvine/%s' % (temp_directory, cache_name)
-    cache_it = pyfscache.FSCache(path, hours=1)
 
-    def instance_function(*args, **kwargs):
-      self = args[0]
+    if temp_directory is not None:
+      path = '%s/calibre-comicvine/%s' % (temp_directory, cache_name)
+      cache_it = pyfscache.FSCache(path, hours=1)
 
-      @cache_it
-      def cached_function(*args, **kwargs):
-        return target_function(self, *args, **kwargs)
+      def instance_function(*args, **kwargs):
+        self = args[0]
 
-      return cached_function(*args[1:], **kwargs)
+        @cache_it
+        def cached_function(*args, **kwargs):
+          return target_function(self, *args, **kwargs)
 
-    return instance_function
+        return cached_function(*args[1:], **kwargs)
+
+      return instance_function
+    else:
+      return target_function
 
   return wrap_function
 
