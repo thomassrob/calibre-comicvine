@@ -57,13 +57,14 @@ class TokenBucket(object):
 token_bucket = TokenBucket()
 
 
-def retry_on_comicvine_error(retries=2):
+def retry_on_comicvine_error():
   """
   Decorator for functions that access the comicvine api.
 
   Retries the decorated function on error.
   """
   pycomicvine.api_key = PREFS['api_key']
+  retries = PREFS['retries']
 
   def wrap_function(target_function):
     """Closure for the retry function, giving access to decorator arguments."""
