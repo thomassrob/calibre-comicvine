@@ -3,21 +3,16 @@ Configuration for the Comicvine metadata source
 """
 import time
 
-from PyQt5.Qt import QWidget, QGridLayout, QLabel, QLineEdit, QComboBox
+from PyQt5.Qt import QWidget, QGridLayout, QLabel, QLineEdit, QSpinBox
 from calibre.utils.config import JSONConfig
-
-_MAX_WORKER_THREADS = 32
-_MAX_BURST_SIZE = 32
-_MAX_RETRIES = 10
 
 PREFS = JSONConfig('plugins/comicvine')
 PREFS.defaults['api_key'] = ''
 PREFS.defaults['worker_threads'] = 16
-PREFS.defaults['requests_rate'] = 0.1
-PREFS.defaults['requests_burst'] = 10
-PREFS.defaults['requests_tokens'] = 0
-PREFS.defaults['requests_update'] = time.time()
+PREFS.defaults['request_interval'] = 10
+PREFS.defaults['request_batch_size'] = 10
 PREFS.defaults['retries'] = 2
+PREFS.defaults['send_logs_to_print'] = True
 
 
 class ConfigWidget(QWidget):
@@ -35,30 +30,32 @@ class ConfigWidget(QWidget):
     self.api_key.setText(PREFS['api_key'])
     self.add_labeled_widget('&API key:', self.api_key)
 
-    worker_thread_range = range(1, _MAX_WORKER_THREADS)
-    self.worker_threads = QComboBox(self)
-    self.worker_threads.addItems([str(value) for value in worker_thread_range])
-    self.worker_threads.setCurrentIndex(worker_thread_range.index(PREFS['worker_threads']))
+    # worker threads is the maximum number of worker threads to spawn, restricted to 1+
+    self.worker_threads = QSpinBox(self)
+    self.worker_threads.setMinimum(1)
+    self.worker_threads.setValue(PREFS['worker_threads'])
     self.add_labeled_widget('&Worker threads:', self.worker_threads)
 
-    self.request_rate = QLineEdit(self)
-    self.request_rate.setText(unicode(PREFS['requests_rate']))
-    self.add_labeled_widget('&Request rate (per second):', self.request_rate)
+    # request interval is in seconds, represents wait time between batches of requests
+    self.request_interval = QSpinBox(self)
+    self.request_interval.setMinimum(0)
+    self.request_interval.setValue(PREFS['request_interval'])
+    self.add_labeled_widget('&Request interval (seconds):', self.request_interval)
 
-    burst_range = range(1, _MAX_BURST_SIZE)
-    self.request_burst = QComboBox(self)
-    self.request_burst.addItems([str(value) for value in burst_range])
-    self.request_burst.setCurrentIndex(burst_range.index(PREFS['requests_burst']))
-    self.add_labeled_widget('&Request burst size:', self.request_burst)
+    # request batch is the maximum number of requests to run at a time, restricted to 1+
+    self.request_batch_size = QSpinBox(self)
+    self.request_batch_size.setMinimum(1)
+    self.request_batch_size.setValue(PREFS['request_batch_size'])
+    self.add_labeled_widget('&Request batch size:', self.request_batch_size)
 
-    retry_range = range(1, _MAX_RETRIES)
-    self.retries = QComboBox(self)
-    self.retries.addItems([str(value) for value in retry_range])
-    self.retries.setCurrentIndex(burst_range.index(PREFS['retries']))
+    # retries is the number of times to retry if we get any error from comicvine besides a rate limit error
+    self.retries = QSpinBox(self)
+    self.retries.setMinimum(0)
+    self.retries.setValue(PREFS['retries'])
     self.add_labeled_widget('&Retries:', self.retries)
 
   def add_labeled_widget(self, label_text, widget):
-    self.index = self.index + 1
+    self.index += 1
     label = QLabel(label_text)
     label.setBuddy(widget)
     self.layout.addWidget(label, self.index, 0)
@@ -67,7 +64,7 @@ class ConfigWidget(QWidget):
   def save_settings(self):
     """Apply new settings value"""
     PREFS['api_key'] = unicode(self.api_key.text())
-    PREFS['worker_threads'] = int(self.worker_threads.currentText())
-    PREFS['requests_rate'] = float(self.request_rate.text())
-    PREFS['requests_burst'] = int(self.request_burst.currentText())
-    PREFS['retries'] = int(self.retries.currentText())
+    PREFS['worker_threads'] = self.worker_threads.value()
+    PREFS['request_interval'] = self.request_interval.value()
+    PREFS['request_batch_size'] = self.request_batch_size.value()
+    PREFS['retries'] = self.retries.value()

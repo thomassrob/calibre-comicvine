@@ -25,31 +25,32 @@ class TokenBucket(object):
   def consume(self):
     with self.lock:
       self.params.refresh()
-      rate = PREFS['requests_rate']
+      time_since_last_request = time.time() - self.params['update']
+      interval = PREFS['request_interval']
       while self.tokens < 1:
-        if self.params['update'] + 1 / rate > time.time():
-          next_token = self.params['update'] + 1 / rate - time.time()
+        if interval > time_since_last_request:
+          delay = interval - time_since_last_request
         else:
-          next_token = 1 / rate
-        logging.warn(
-          'Slow down cowboy: %0.2f seconds to next token', next_token)
-        time.sleep(next_token)
+          delay = interval
+        logging.warn('%0.2f seconds to next request token', delay)
+        time.sleep(delay)
       self.params['tokens'] -= 1
 
   @property
   def tokens(self):
     with self.lock:
       self.params.refresh()
-      if self.params['tokens'] < PREFS['requests_burst']:
+
+      if self.params['tokens'] < PREFS['request_batch_size']:
         now = time.time()
         elapsed = now - self.params['update']
         if elapsed > 0:
-          new_tokens = int(elapsed * PREFS['requests_rate'])
+          new_tokens = int(elapsed * (1.0 / PREFS['request_interval']))
           if new_tokens:
-            if new_tokens + self.params['tokens'] < PREFS['requests_burst']:
+            if new_tokens + self.params['tokens'] < PREFS['request_batch_size']:
               self.params['tokens'] += new_tokens
             else:
-              self.params['tokens'] = PREFS['requests_burst']
+              self.params['tokens'] = PREFS['request_batch_size']
             self.params['update'] = now
     return self.params['tokens']
 
@@ -83,15 +84,15 @@ def retry_on_comicvine_error():
         try:
           return target_function(*args, **kwargs)
         except RateLimitExceededError:
-          logging.warn('API Rate limited exceeded.')
+          logging.warn('API Rate limit exceeded.')
           raise
         except:
           logging.warn('Calling %r failed on attempt %d/%d with args: %r %r',
                        target_function, retry, retries, args, kwargs)
           if retry == retries:
             raise
-          # Failures may be due to busy servers.  Be a good citizen and
-          # back off for 100-600 ms before retrying.
+          # Failures may be due to busy servers.
+          # Wait for 100-600 ms before retrying.
           time.sleep(random.random() / 2 + 0.1)
         else:
           break
