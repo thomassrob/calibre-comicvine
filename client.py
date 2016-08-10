@@ -180,20 +180,29 @@ class PyComicvineWrapper(object):
       self.warn("Failed to find issue: %d" % issue_id)
       return None
 
+  @cache_comicvine('lookup_issue_image_urls')
   @retry_on_comicvine_error()
-  def lookup_issue_image(self, issue_id):
+  def lookup_issue_image_urls(self, issue_id, get_best_cover=False):
+    """Retrieve cover urls, in quality order."""
     self.debug('Looking up issue image: %d' % issue_id)
     issue = pycomicvine.Issue(issue_id, field_list=['image'])
 
     if issue and issue.image:
-      self.debug("Found issue image: %d %s" % (issue_id, issue.image))
-      return issue.image
+      urls = []
+      for url_key in ['super_url', 'medium_url', 'small_url']:
+        if url_key in issue.image:
+          urls.append(issue.image[url_key])
+          if get_best_cover:
+            break
+
+      self.debug("Found issue image urls: %d %s" % (issue_id, urls))
+      return urls
     elif issue:
       self.warn("Found issue but failed to find issue image: %d" % issue_id)
-      return None
+      return []
     else:
       self.warn("Failed to find issue: %d" % issue_id)
-      return None
+      return []
 
   @retry_on_comicvine_error()
   def search_for_authors(self, author_tokens):

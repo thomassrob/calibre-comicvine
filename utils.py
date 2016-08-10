@@ -107,13 +107,3 @@ def find_author_issue_ids(query, authors, log):
     return issue_ids
   else:
     return None
-
-
-def cover_urls(comicvine_id, log, get_best_cover=False):
-  """Retrieve cover urls, in quality order."""
-  image = PyComicvineWrapper(log).lookup_issue_image(int(comicvine_id))
-  for url in ['super_url', 'medium_url', 'small_url']:
-    if url in image:
-      yield image[url]
-      if get_best_cover:
-        break

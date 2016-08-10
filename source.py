@@ -15,6 +15,7 @@ from calibre.utils.config import OptionParser
 import calibre.utils.logging as calibre_logging
 from calibre_plugins.comicvine.config import PREFS
 from calibre_plugins.comicvine import ranking, utils
+from client import PyComicvineWrapper
 
 class Comicvine(Source):
   """Metadata source implementation"""
@@ -168,7 +169,7 @@ class Comicvine(Source):
                      title=None, authors=None, identifiers=None,
                      timeout=30, get_best_cover=False):
     if identifiers and 'comicvine' in identifiers:
-      for url in utils.cover_urls(identifiers['comicvine'], log, get_best_cover):
+      for url in PyComicvineWrapper(log).lookup_issue_image_urls(int(identifiers['comicvine']), get_best_cover):
         browser = self.browser
         log.debug('Downloading cover from:', url)
         try:
