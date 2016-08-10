@@ -1,7 +1,7 @@
 """
 calibre_plugins.comicvine - A calibre metadata source for comicvine
 """
-#pylint: disable-msg=R0913,R0904
+# pylint: disable-msg=R0913,R0904
 from functools import partial
 import logging
 from multiprocessing.pool import ThreadPool
@@ -16,6 +16,7 @@ import calibre.utils.logging as calibre_logging
 from calibre_plugins.comicvine.config import PREFS
 from calibre_plugins.comicvine import ranking, utils
 from client import PyComicvineWrapper
+
 
 class Comicvine(Source):
   """Metadata source implementation"""
@@ -62,9 +63,9 @@ class Comicvine(Source):
         result.title, pubdate)
     print result_text
 
-
   def cli_main(self, args):
     """Perform comicvine lookups from the calibre-debug cli."""
+
     def option_parser():
       """Parse command line options."""
       parser = OptionParser(
