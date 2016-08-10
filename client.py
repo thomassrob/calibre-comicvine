@@ -7,10 +7,11 @@ import time
 import threading
 import pyfscache
 import os
+import pycomicvine
 
+from urllib2 import HTTPError
 from calibre.utils.config import JSONConfig
-from calibre_plugins.comicvine import pycomicvine
-from calibre_plugins.comicvine.config import PREFS
+from config import PREFS
 from pycomicvine.error import RateLimitExceededError
 
 
@@ -81,21 +82,31 @@ def retry_on_comicvine_error():
       """
       for retry in range(1, retries + 1):
         token_bucket.consume()
+
+        def handle_rate_limit(e):
+          logging.warn('API Rate limit exceeded %s', e.message)
+          raise
+
+        def handle_exception(e):
+          logging.warn('Calling %r failed on attempt %d/%d - args [%r %r], exception %s',
+                       target_function, retry, retries, args, kwargs, e.message)
+
+          if retry >= retries:
+            raise
+          else:
+            time.sleep(random.random() / 2 + 0.1)
+
         try:
           return target_function(*args, **kwargs)
-        except RateLimitExceededError:
-          logging.warn('API Rate limit exceeded.')
-          raise
-        except:
-          logging.warn('Calling %r failed on attempt %d/%d with args: %r %r',
-                       target_function, retry, retries, args, kwargs)
-          if retry == retries:
-            raise
-          # Failures may be due to busy servers.
-          # Wait for 100-600 ms before retrying.
-          time.sleep(random.random() / 2 + 0.1)
-        else:
-          break
+        except RateLimitExceededError as e:
+          handle_rate_limit(e)
+        except HTTPError as e:
+          if e.code == 420:
+            handle_rate_limit(e)
+          else:
+            handle_exception(e)
+        except Exception as e:
+          handle_exception(e)
 
     return retry_function
 
