@@ -112,7 +112,7 @@ def retry_on_comicvine_error():
                 the error.
                 """
                 logging.warning('API Rate limit exceeded %s',
-                                error_to_log.message)
+                                error_to_log)
 
             def log_error(error_to_log, current_attempt):
                 """
@@ -123,10 +123,10 @@ def retry_on_comicvine_error():
                 logging.warning(
                     'Calling %r failed on attempt %d/%d - '
                     'args [%r %r], '
-                    'exception %s',
+                    '%s %s',
                     target_function, current_attempt, max_attempts,
                     args, kwargs,
-                    error_to_log.message
+                    error_to_log.__class__, error_to_log
                 )
 
             for attempt in range(1, max_attempts + 1):
@@ -146,6 +146,11 @@ def retry_on_comicvine_error():
                         if can_retry(attempt):
                             continue
                         raise
+                except IOError as error:
+                    log_error(error, attempt)
+                    if can_retry(attempt):
+                        continue
+                    raise
                 except Exception as error:
                     log_error(error, attempt)
                     raise
