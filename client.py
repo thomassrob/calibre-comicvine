@@ -5,14 +5,16 @@ import logging
 import random
 import time
 import threading
-import pyfscache
 import os
-import pycomicvine
-
 from urllib2 import HTTPError
+
 from calibre.utils.config import JSONConfig
-from config import PREFS
+
+import pyfscache
+import pycomicvine
 from pycomicvine.error import RateLimitExceededError
+
+from config import PREFS
 
 
 class TokenBucket(object):
