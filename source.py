@@ -73,7 +73,7 @@ class Comicvine(Source):
         def option_parser():
             """Parse command line options."""
             option_parser = OptionParser(
-                usage='Comicvine [t:title] [a:authors] [i:id]')
+                usage='Comicvine [t:title] [a:authors] [i:id] [-- -v]')
             option_parser.add_option('--opf', '-o', action='store_true',
                                      dest='opf')
             option_parser.add_option('--verbose', '-v', default=False,
