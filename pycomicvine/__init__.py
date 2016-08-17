@@ -35,7 +35,6 @@ import collections
 _API_URL = "https://www.comicvine.com/api/"
 
 _cached_resources = {}
-_api_hooks = {}
 
 api_key = ""
 
@@ -45,17 +44,6 @@ def str_to_datetime(value):
     except ValueError:
         return value
 
-def hook_register(hook_name, callback):
-    if callable(callback):
-        _api_hooks[hook_name] = callback
-    else:
-        raise error.IllegalArquementException(
-            "Hook callbacks must be callable"
-        )
-
-def hook_run(hook_name, *args, **kwargs):
-    if callable(_api_hooks.get(hook_name)):
-        _api_hooks[hook_name](*args, **kwargs)
 
 class AttributeDefinition(object):
     def __init__(self, target, start_type = None):
@@ -77,7 +65,7 @@ class AttributeDefinition(object):
             if not isinstance(start_type, type) and \
                 not (isinstance(start_type, collections.Iterable) and
                      all(isinstance(t, type) for t in start_type)):
-                raise error.IllegalArquementException(
+                raise pycomicvine.error.IllegalArquementException(
                         "A start type needs to be defined"
                     )
             self._target = target
@@ -113,7 +101,7 @@ class AttributeDefinition(object):
                 else:
                     return value
             else:
-                raise error.NotConvertableError(
+                raise pycomicvine.error.NotConvertableError(
                         "Error in convertion '"+str(value)+"' => "+\
                         self._target_name
                     )
@@ -159,7 +147,7 @@ class _Resource(object):
     def _request(type, baseurl, **params):
         if 'api_key' not in params:
             if len(api_key) == 0:
-                raise error.InvalidAPIKeyError(
+                raise pycomicvine.error.InvalidAPIKeyError(
                         "Invalid API Key"
                     )
             params['api_key'] = api_key
@@ -170,7 +158,7 @@ class _Resource(object):
                     for field_name in params['field_list']:
                         field_list += str(field_name)+","
                 except TypeError, e:
-                    raise error.IllegalArquementException(
+                    raise pycomicvine.error.IllegalArquementException(
                             "'field_list' must be iterable"
                         )
                 params['field_list'] = field_list
@@ -186,7 +174,6 @@ class _Resource(object):
         params['format'] = 'json'
         params = urlencode(params)
         url = baseurl+"?"+params
-        hook_run('pre_request_hook')
         logging.getLogger(__name__).debug("Calling "+url)
         if timeout == None:
             response_raw = json.loads(urllib2.urlopen(url).read())
@@ -197,9 +184,9 @@ class _Resource(object):
                 ).read())
         response = type._Response(**response_raw)
         if response.status_code != 1:
-            raise error.EXCEPTION_MAPPING.get(
+            raise pycomicvine.error.EXCEPTION_MAPPING.get(
                     response.status_code,
-                    error.UnknownStatusError
+                    pycomicvine.error.UnknownStatusError
                 )(response.error)
         if 'aliases' in response.results and \
                 isinstance(response.results['aliases'], basestring):
@@ -224,7 +211,7 @@ class _SingularResource(_Resource):
         try:
             type_id = Types()[resource_type]['id']
         except KeyError:
-            return error.InvalidResourceError(
+            return pycomicvine.error.InvalidResourceError(
                     resource_type
                 )
         type._ensure_resource_url()
@@ -248,7 +235,7 @@ class _SingularResource(_Resource):
             try:
                 type_id = Types()[type(self)]['id']
             except KeyError:
-                raise error.InvalidResourceError(
+                raise pycomicvine.error.InvalidResourceError(
                         "Resource type '{0!s}' does not exist.".format(
                                 type(self)
                             )
@@ -492,7 +479,7 @@ class _SortableListResource(_ListResource):
                     sort = str(sort[0])+":"+str(sort[1])
                 except KeyError:
                     if 'field' not in sort:
-                        raise error.IllegalArquementException(
+                        raise pycomicvine.error.IllegalArquementException(
                                 "Argument 'sort' must contain item 'field'"
                             )
                     if 'direction' in sort:
@@ -589,11 +576,44 @@ class Concept(_SingularResource):
 class Concepts(_SortableListResource):
     pass
 
+class Episode(_SingularResource):
+    aliases = AttributeDefinition('keep')
+    api_detail_url = AttributeDefinition('keep')
+    character_credits = AttributeDefinition('Characters')
+    characters_died_in = AttributeDefinition('Characters')
+    concept_credits = AttributeDefinition('Concepts')
+    air_date = AttributeDefinition(datetime.datetime)
+    date_added = AttributeDefinition(datetime.datetime)
+    date_last_updated = AttributeDefinition(datetime.datetime)
+    deck = AttributeDefinition('keep')
+    description = AttributeDefinition('keep')
+    first_appearance_characters = AttributeDefinition('Characters')
+    first_appearance_concepts = AttributeDefinition('Concepts')
+    first_appearance_locations = AttributeDefinition('Locations')
+    first_appearance_objects = AttributeDefinition('Objects')
+    first_appearance_storyarcs = AttributeDefinition('StoryArcs')
+    first_appearance_teams = AttributeDefinition('Teams')
+    has_staff_review = AttributeDefinition('keep')
+    id = AttributeDefinition('keep')
+    image = AttributeDefinition('keep')
+    episode_number = AttributeDefinition('keep')
+    location_credits = AttributeDefinition('Locations')
+    name = AttributeDefinition('keep')
+    object_credits = AttributeDefinition('Objects')
+    person_credits = AttributeDefinition('People')
+    site_detail_url = AttributeDefinition('keep')
+    story_arc_credits = AttributeDefinition('StoryArcs')
+    team_credits = AttributeDefinition('team_credits')
+    series = AttributeDefinition('Series')
+
+class Episodes(_SortableListResource):
+    pass
+
 class Issue(_SingularResource):
     aliases = AttributeDefinition('keep')
     api_detail_url = AttributeDefinition('keep')
     character_credits = AttributeDefinition('Characters')
-    character_died_in = AttributeDefinition('Characters')
+    characters_died_in = AttributeDefinition('Characters')
     concept_credits = AttributeDefinition('Concepts')
     cover_date = AttributeDefinition(datetime.datetime)
     date_added = AttributeDefinition(datetime.datetime)
@@ -618,7 +638,7 @@ class Issue(_SingularResource):
     store_date = AttributeDefinition(datetime.datetime)
     story_arc_credits = AttributeDefinition('StoryArcs')
     team_credits = AttributeDefinition('Teams')
-    team_disbanded_in = AttributeDefinition('Teams')
+    teams_disbanded_in = AttributeDefinition('Teams')
     volume = AttributeDefinition('Volume')
 
     def __unicode__(self):
@@ -641,12 +661,10 @@ class Issue(_SingularResource):
         return string + u"["+unicode(self.id)+u"]"
 
     def _fix_api_error(self, name):
-        if name == 'characters_died_in':
-            return 'character_died_in'
         if name == 'disbanded_teams':
-            return 'team_disbanded_in'
-        if name == 'teams_disbanded_in':
-            return 'team_disbanded_in'
+            return 'teams_disbanded_in'
+        if name == 'team_disbanded_in':
+            return 'teams_disbanded_in'
         return super(Issue, self)._fix_api_error(name)
 
 class Issues(_SortableListResource):
@@ -849,6 +867,28 @@ class Search(_ListResource):
     def __init__(self, query, **kwargs):
         super(Search, self).__init__(query=query, **kwargs)
 
+class Series(_SingularResource):
+    aliases = AttributeDefinition('keep')
+    api_detail_url = AttributeDefinition('keep')
+    character_credits = AttributeDefinition('Characters')
+    count_of_episodes = AttributeDefinition('keep')
+    date_added = AttributeDefinition(datetime.datetime)
+    date_last_updated = AttributeDefinition(datetime.datetime)
+    deck = AttributeDefinition('keep')
+    description = AttributeDefinition('keep')
+    first_episode = AttributeDefinition('Episode')
+    id = AttributeDefinition('keep')
+    image = AttributeDefinition('keep')
+    last_episode = AttributeDefinition('Episode')
+    location_credits = AttributeDefinition('Locations')
+    name = AttributeDefinition('keep')
+    publisher = AttributeDefinition('Publisher')
+    site_detail_url = AttributeDefinition('keep')
+    start_year = AttributeDefinition('keep')
+
+class SeriesList(_ListResource):
+    pass
+
 class StoryArc(_SingularResource):
     aliases = AttributeDefinition('keep')
     api_detail_url = AttributeDefinition('keep')
@@ -1002,6 +1042,7 @@ class Volume(_SingularResource):
     first_issue = AttributeDefinition('Issue')
     id = AttributeDefinition('keep')
     image = AttributeDefinition('keep')
+    issues = AttributeDefinition('Issues')
     last_issue = AttributeDefinition('Issue')
     locations = AttributeDefinition('Locations')
     name = AttributeDefinition('keep')
