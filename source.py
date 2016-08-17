@@ -23,8 +23,8 @@ import utils
 class Comicvine(Source):
     """Metadata source implementation"""
     name = 'Comicvine'
-    description = 'Downloads metadata and covers from Comicvine'
-    author = 'Russell Heilling'
+    description = 'Downloads metadata and covers from Comicvine.'
+    author = 'Chris Fairbanks, Russell Heilling'
     version = (0, 12, 1)
     capabilities = frozenset(['identify', 'cover'])
     touched_fields = frozenset([
