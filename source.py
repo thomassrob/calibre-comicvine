@@ -108,9 +108,12 @@ class Comicvine(Source):
                 (idtype, identifier) = arg.split(':', 2)[1:]
                 identifiers[idtype] = int(identifier)
         result_queue = Queue()
-        self.identify(
-            log, result_queue, False, title=title, authors=authors,
-            identifiers=identifiers)
+        self.identify(log,
+                      result_queue,
+                      abort=False,
+                      title=title,
+                      authors=authors,
+                      identifiers=identifiers)
         rank = self.identify_results_keygen(title, authors, identifiers)
         for result in sorted(result_queue.queue, key=rank):
             self._print_result(result, rank, opf=opts.opf)
