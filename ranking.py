@@ -3,6 +3,8 @@ calibre_plugins.comicvine - A calibre metadata source for comicvine
 """
 import re
 
+import parser
+
 
 def keygen(metadata, title=None, authors=None, identifiers=None, **kwargs):
     """
@@ -138,13 +140,13 @@ def score_comments(comments):
 
 def sanitize_title(input_title):
     """
-    Given the title from the initial input, strip the date out of it.
+    Given the title from the initial input, strip the date out of it,
+    lower-case it, and strip off any leading/trailing whitespace.
     """
-    match_year = re.compile(r'\((\d{4})\)')
-    if match_year.search(input_title):
-        return match_year.sub('', input_title).lower().strip()
-    else:
-        return input_title.lower().strip()
+    year = parser.get_year(input_title)
+    if year is not None:
+        input_title = parser.rreplace(input_title, '(%s)' % year, '')
+    return input_title.lower().strip()
 
 
 def format_issue_title(series, series_index):
