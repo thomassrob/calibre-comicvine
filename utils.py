@@ -1,25 +1,10 @@
 """
 calibre_plugins.comicvine - A calibre metadata source for comicvine
 """
-import logging
 
 from calibre.ebooks.metadata.book.base import Metadata
-from calibre.utils import logging as calibre_logging
 
 from client import PyComicvineWrapper
-
-
-class CalibreHandler(logging.Handler):
-    """
-    Python logging handler that directs messages to the calibre logging interface.
-    """
-
-    def emit(self, record):
-        """
-        Send message to the Calibre log.
-        """
-        level = getattr(calibre_logging, record.levelname)
-        calibre_logging.default_log.prints(level, record.getMessage())
 
 
 def build_meta(log, issue_id):
