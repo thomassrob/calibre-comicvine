@@ -208,20 +208,20 @@ class PyComicvineWrapper(object):
     @retry_on_comicvine_error()
     def lookup_volume_id(self, volume_id):
         """Ensure the volume ID passed in matches a real volume."""
-        self.debug('Looking up volume: %d' % volume_id)
+        self.log.debug('Looking up volume: %d' % volume_id)
         volume = pycomicvine.Volume(id=volume_id, field_list=['id'])
 
         if volume:
-            self.debug("Found volume: %d" % volume_id)
+            self.log.debug("Found volume: %d" % volume_id)
             return volume.id
         else:
-            self.warning("Failed to find volume: %d" % volume_id)
+            self.log.warning("Failed to find volume: %d" % volume_id)
             return None
 
     @retry_on_comicvine_error()
     def lookup_issue(self, issue_id):
         """Fetch the metadata we need, given an issue ID."""
-        self.debug('Looking up issue: %d' % issue_id)
+        self.log.debug('Looking up issue: %d' % issue_id)
         issue = pycomicvine.Issue(issue_id,
                                   field_list=['id',
                                               'name',
@@ -232,22 +232,22 @@ class PyComicvineWrapper(object):
                                               'store_date',
                                               'cover_date'])
         if issue and issue.volume:
-            self.debug('Found issue: %d %s #%s' %
-                       (issue_id, issue.volume.name, issue.issue_number))
+            self.log.debug('Found issue: %d %s #%s' %
+                           (issue_id, issue.volume.name, issue.issue_number))
             return issue
         elif issue:
-            self.warning("Found issue but failed to find issue volume: %d" %
-                         issue_id)
+            self.log.warning("Found issue but failed to find issue volume: %d" %
+                             issue_id)
             return None
         else:
-            self.warning("Failed to find issue: %d" % issue_id)
+            self.log.warning("Failed to find issue: %d" % issue_id)
             return None
 
     @cache_comicvine('lookup_issue_image_urls')
     @retry_on_comicvine_error()
     def lookup_issue_image_urls(self, issue_id, get_best_cover=False):
         """Retrieve cover urls, in quality order."""
-        self.debug('Looking up issue image: %d' % issue_id)
+        self.log.debug('Looking up issue image: %d' % issue_id)
         issue = pycomicvine.Issue(issue_id, field_list=['image'])
 
         if issue and issue.image:
@@ -258,14 +258,14 @@ class PyComicvineWrapper(object):
                     if get_best_cover:
                         break
 
-            self.debug("Found issue image urls: %d %s" % (issue_id, urls))
+            self.log.debug("Found issue image urls: %d %s" % (issue_id, urls))
             return urls
         elif issue:
-            self.warning(
+            self.log.warning(
                 "Found issue but failed to find issue image: %d" % issue_id)
             return []
         else:
-            self.warning("Failed to find issue: %d" % issue_id)
+            self.log.warning("Failed to find issue: %d" % issue_id)
             return []
 
     @retry_on_comicvine_error()
@@ -275,10 +275,10 @@ class PyComicvineWrapper(object):
             filters = ['name:%s' % author_token
                        for author_token in author_tokens]
             filter_string = ','.join(filters)
-            self.debug("Searching for author: %s" % filter_string)
+            self.log.debug("Searching for author: %s" % filter_string)
             authors = pycomicvine.People(filter=filter_string,
                                          field_list=['id'])
-            self.debug("%d matches found" % len(authors))
+            self.log.debug("%d matches found" % len(authors))
             return authors
         else:
             return []
@@ -288,10 +288,10 @@ class PyComicvineWrapper(object):
     def search_for_issue_ids(self, filters):
         """Search for all issue IDs which match the given filters."""
         filter_string = ','.join(filters)
-        self.debug('Searching for issues: %s' % filter_string)
+        self.log.debug('Searching for issues: %s' % filter_string)
         ids = [issue.id for issue in
                pycomicvine.Issues(filter=filter_string, field_list=['id'])]
-        self.debug('%d issue ID matches found: %s' % (len(ids), ids))
+        self.log.debug('%d issue ID matches found: %s' % (len(ids), ids))
         return ids
 
     @cache_comicvine('search_for_volume_ids')
@@ -299,22 +299,10 @@ class PyComicvineWrapper(object):
     def search_for_volume_ids(self, title_tokens):
         """Search for IDs of all volumes which match the given title tokens."""
         query_string = ' AND '.join(title_tokens)
-        self.debug('Searching for volumes: %s' % query_string)
+        self.log.debug('Searching for volumes: %s' % query_string)
         candidate_volume_ids = [volume.id for volume in
                                 pycomicvine.Volumes.search(query=query_string,
                                                            field_list=['id'])]
-        self.debug('%d volume ID matches found: %s' % (
+        self.log.debug('%d volume ID matches found: %s' % (
             len(candidate_volume_ids), candidate_volume_ids))
         return candidate_volume_ids
-
-    def debug(self, message):
-        """Wrap log.debug calls to allow for debugging print output."""
-        self.log.debug(message)
-        # uncomment for calibre-debug testing
-        # print(message)
-
-    def warning(self, message):
-        """Wrap log.warn calls to allow for debugging print output."""
-        self.log.warn(message)
-        # uncomment for calibre-debug testing
-        # print(message)
