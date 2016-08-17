@@ -55,7 +55,7 @@ class Comicvine(Source):
         """Return true if there is an API key configured."""
         return bool(PREFS.get('api_key'))
 
-    def _print_result(self, result, ranking, opf=False):
+    def _print_result(self, result, ranking, opf=None):
         if opf:
             result_text = metadata_to_opf(result)
         else:
@@ -73,14 +73,15 @@ class Comicvine(Source):
 
         def option_parser():
             """Parse command line options."""
-            parser = OptionParser(
+            option_parser = OptionParser(
                 usage='Comicvine [t:title] [a:authors] [i:id]')
-            parser.add_option('--opf', '-o', action='store_true', dest='opf')
-            parser.add_option('--verbose', '-v', default=False,
-                              action='store_true', dest='verbose')
-            parser.add_option('--debug_api', default=False,
-                              action='store_true', dest='debug_api')
-            return parser
+            option_parser.add_option('--opf', '-o', action='store_true',
+                                     dest='opf')
+            option_parser.add_option('--verbose', '-v', default=False,
+                                     action='store_true', dest='verbose')
+            option_parser.add_option('--debug_api', default=False,
+                                     action='store_true', dest='debug_api')
+            return option_parser
 
         opts, args = option_parser().parse_args(args)
         if opts.debug_api:
@@ -95,7 +96,10 @@ class Comicvine(Source):
         log = calibre_logging.ThreadSafeLog(
             level=getattr(calibre_logging, level))
 
-        (title, authors, ids) = (None, [], {})
+        title = None
+        authors = []
+        identifiers = {}
+
         for arg in args:
             if arg.startswith('t:'):
                 title = arg.split(':', 1)[1]
@@ -103,14 +107,14 @@ class Comicvine(Source):
                 authors.append(arg.split(':', 1)[1])
             if arg.startswith('i:'):
                 (idtype, identifier) = arg.split(':', 2)[1:]
-                ids[idtype] = int(identifier)
+                identifiers[idtype] = int(identifier)
         result_queue = Queue()
         self.identify(
             log, result_queue, False, title=title, authors=authors,
-            identifiers=ids)
-        ranking = self.identify_results_keygen(title, authors, ids)
-        for result in sorted(result_queue.queue, key=ranking):
-            self._print_result(result, ranking, opf=opts.opf)
+            identifiers=identifiers)
+        rank = self.identify_results_keygen(title, authors, identifiers)
+        for result in sorted(result_queue.queue, key=rank):
+            self._print_result(result, rank, opf=opts.opf)
             if opts.opf:
                 break
 
@@ -139,9 +143,12 @@ class Comicvine(Source):
 
     def identify(self, log, result_queue, abort,
                  title=None, authors=None, identifiers=None, timeout=30):
-        """Attempt to identify comicvine Issue matching given parameters."""
+        """
+        Attempt to identify comicvine Issue matching given parameters.
 
-        # Do a simple lookup if comicvine identifier present
+        Do a simple lookup if comicvine identifier is present.
+        """
+
         if identifiers:
             comicvine_id = identifiers.get('comicvine')
             if comicvine_id is not None:
