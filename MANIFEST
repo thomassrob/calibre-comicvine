@@ -4,6 +4,7 @@ plugin-import-name-comicvine.txt
 __init__.py
 client.py
 config.py
+parser.py
 ranking.py
 source.py
 utils.py

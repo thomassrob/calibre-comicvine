@@ -14,6 +14,7 @@ from calibre.utils.config import OptionParser
 import calibre.utils.logging as calibre_logging
 
 from config import PREFS
+import parser
 import ranking
 import utils
 from client import PyComicvineWrapper
@@ -128,7 +129,7 @@ class Comicvine(Source):
     def identify_results_keygen(self, title=None, authors=None,
                                 identifiers=None):
         """Provide a keying function for result comparison."""
-        (issue_number, title_tokens) = utils.normalised_title(self, title)
+        (issue_number, title_tokens) = parser.normalised_title(self, title)
         return partial(ranking.keygen,
                        title=title,
                        authors=authors,
@@ -155,7 +156,7 @@ class Comicvine(Source):
             else:
                 volume_id = None
 
-            (issue_number, title_tokens) = utils.normalised_title(self, title)
+            (issue_number, title_tokens) = parser.normalised_title(self, title)
 
             # Look up candidate volume IDs based on title
             candidate_volume_ids = utils.find_volume_ids(title_tokens,
