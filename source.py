@@ -131,7 +131,11 @@ class Comicvine(Source):
 
     def identify_results_keygen(self, title=None, authors=None,
                                 identifiers=None):
-        """Provide a keying function for result comparison."""
+        """
+        Provide a keying function for result comparison.
+
+        Used by Calibre to sort results.
+        """
         (issue_number, title_tokens) = parser.normalised_title(self, title)
         return partial(ranking.keygen,
                        title=title,
