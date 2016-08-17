@@ -103,6 +103,8 @@ class TestParser(unittest.TestCase):
         self.assertEqual(expected_year, parser.get_year(input_title))
 
     def test_rreplace(self):
+        self.assertEqual('None matches-whitespace',
+                         parser.rreplace('None matches whitespace', None, '-'))
         self.assertEqual('Buffy  ',
                          parser.rreplace('Buffy (2015) (2015)', '(2015)', '',
                                          2))
