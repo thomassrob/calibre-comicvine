@@ -46,3 +46,22 @@ def get_issue_number(source, title):
 def get_title_tokens(source, title):
     (issue_number, title_tokens) = normalised_title(source, title)
     return title_tokens
+
+
+def get_year(title):
+    """
+    Finds the last occurrence of a 4-digit number, within parentheses.
+    Returns that as the suspected year of this issue's publication.
+    If no match is found, return None.
+    """
+    match_year = re.compile(r'\((\d{4})\)')
+    matches = match_year.findall(title)
+    return matches[-1] if matches else None
+
+
+def rreplace(string, old, new, occurrence=1):
+    """
+    Replace n occurrences of old in string with new, starting from the end.
+    """
+    parts = string.rsplit(old, occurrence)
+    return new.join(parts)

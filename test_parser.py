@@ -55,9 +55,8 @@ class TestParser(unittest.TestCase):
     def run_get_issue_number_test(self,
                                   input_title,
                                   expected_issue_number):
-        mock_source = StubSource()
         self.assertEqual(expected_issue_number,
-                         parser.get_issue_number(mock_source, input_title))
+                         parser.get_issue_number(StubSource(), input_title))
 
     def test_get_title_tokens(self):
         self.run_get_title_tokens_test('', '')
@@ -84,6 +83,35 @@ class TestParser(unittest.TestCase):
         mock_source = MockSource(expected_sanitized_title, mock_tokens)
         self.assertEqual(mock_tokens,
                          parser.get_title_tokens(mock_source, input_title))
+
+    def test_get_year(self):
+        self.run_get_year_test('', None)
+        self.run_get_year_test('superdog in space', None)
+        self.run_get_year_test(
+            'Magnus, Robot Fighter 01 (2010) (two covers) (Minutemen-DTs)',
+            '2010')
+        self.run_get_year_test(
+            'Spider-Man 003.1 (2010) (extra stuff)', '2010')
+        self.run_get_year_test(
+            'Buffy Season 10 015 (2015) (Digital) (Cypher 2.0-Empire)', '2015')
+        self.run_get_year_test(
+            'Buffy Season 10 015 (Digital) (Cypher 2.0-Empire)', None)
+        self.run_get_year_test(
+            '2013 (2014) (2015) 2016 (Digital) (Cypher 2.0-Empire)', '2015')
+
+    def run_get_year_test(self, input_title, expected_year):
+        self.assertEqual(expected_year, parser.get_year(input_title))
+
+    def test_rreplace(self):
+        self.assertEqual('Buffy  ',
+                         parser.rreplace('Buffy (2015) (2015)', '(2015)', '',
+                                         2))
+        self.assertEqual('Buffy (2015) ',
+                         parser.rreplace('Buffy (2015) (2015)', '(2015)', ''))
+        self.assertEqual('123 4 5', parser.rreplace('1232425', '2', ' ', 2))
+        self.assertEqual('1 3 4 5', parser.rreplace('1232425', '2', ' ', 3))
+        self.assertEqual('1 3 4 5', parser.rreplace('1232425', '2', ' ', 4))
+        self.assertEqual('1232425', parser.rreplace('1232425', '2', ' ', 0))
 
 
 class MockSource:
