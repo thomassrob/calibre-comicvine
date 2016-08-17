@@ -2,11 +2,11 @@
 calibre_plugins.comicvine - A calibre metadata source for comicvine
 """
 import logging
-import re
 
 from calibre.ebooks.metadata.book.base import Metadata
 from calibre.utils import logging as calibre_logging
-from calibre_plugins.comicvine.client import PyComicvineWrapper
+
+from client import PyComicvineWrapper
 
 
 class CalibreHandler(logging.Handler):
