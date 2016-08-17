@@ -13,11 +13,11 @@ from calibre.ebooks.metadata.sources.base import Source
 from calibre.utils.config import OptionParser
 import calibre.utils.logging as calibre_logging
 
-from config import PREFS
+from client import PyComicvineWrapper
+from config import PREFS, ConfigWidget
 import parser
 import ranking
 import utils
-from client import PyComicvineWrapper
 
 
 class Comicvine(Source):
@@ -44,7 +44,6 @@ class Comicvine(Source):
 
     def config_widget(self):
         """Return a config widget for Calibre."""
-        from calibre_plugins.comicvine.config import ConfigWidget
         return ConfigWidget()
 
     def save_settings(self, config_widget):
