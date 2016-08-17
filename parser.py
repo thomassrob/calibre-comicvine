@@ -5,7 +5,7 @@ Expose methods for parsing titles into structured data.
 import re
 
 
-def normalised_title(query, title):
+def normalised_title(source, title):
     """
     Returns (issue_number,title_tokens).
 
@@ -33,6 +33,16 @@ def normalised_title(query, title):
     if issue_match:
         issue_number = issue_match.group(1)
         title = issue_pattern.sub('', title)
-    for token in query.get_title_tokens(title):
+    for token in source.get_title_tokens(title):
         title_tokens.append(token.lower())
     return issue_number, title_tokens
+
+
+def get_issue_number(source, title):
+    (issue_number, title_tokens) = normalised_title(source, title)
+    return issue_number
+
+
+def get_title_tokens(source, title):
+    (issue_number, title_tokens) = normalised_title(source, title)
+    return title_tokens
