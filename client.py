@@ -12,7 +12,7 @@ from calibre.utils.config import JSONConfig
 
 import pyfscache
 import pycomicvine
-from pycomicvine.error import RateLimitExceededError
+from pycomicvine.error import RateLimitExceededError, InvalidResourceError
 
 from config import PREFS
 
@@ -146,6 +146,11 @@ def retry_on_comicvine_error():
                         if can_retry(attempt):
                             continue
                         raise
+                except InvalidResourceError as error:
+                    log_error(error, attempt)
+                    if can_retry(attempt):
+                        continue
+                    raise
                 except IOError as error:
                     log_error(error, attempt)
                     if can_retry(attempt):
