@@ -84,15 +84,12 @@ class Comicvine(Source):
                                      dest='opf')
             option_parser.add_option('--verbose', '-v', default=False,
                                      action='store_true', dest='verbose')
-            option_parser.add_option('--debug_api', default=False,
-                                     action='store_true', dest='debug_api')
             return option_parser
 
         opts, args = option_parser().parse_args(args)
-        if opts.debug_api:
+        if opts.verbose:
             calibre_logging.default_log = calibre_logging.Log(
                 level=calibre_logging.DEBUG)
-        if opts.verbose:
             level = 'DEBUG'
         else:
             level = 'INFO'
