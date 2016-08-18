@@ -311,8 +311,10 @@ class PyComicvineWrapper(object):
         """Search for IDs of all volumes which match the given title tokens."""
         query_string = ' AND '.join(title_tokens)
         self.log.debug('Searching for volumes: %s' % query_string)
+        limit = PREFS['search_volume_limit']
         volumes = pycomicvine.Volumes.search(query=query_string,
-                                             field_list=['id'])
+                                             field_list=['id'],
+                                             limit=limit)
         # it is possible for pycomicvine to return iterables containing None
         volumes = [a for a in volumes if a is not None]
         candidate_volume_ids = [volume.id for volume in volumes]

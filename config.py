@@ -11,6 +11,7 @@ PREFS.defaults['request_interval'] = 10
 PREFS.defaults['request_batch_size'] = 10
 PREFS.defaults['retries'] = 2
 PREFS.defaults['send_logs_to_print'] = True
+PREFS.defaults['search_volume_limit'] = 1000
 
 
 class ConfigWidget(QWidget):
@@ -56,6 +57,16 @@ class ConfigWidget(QWidget):
         self.retries.setValue(PREFS['retries'])
         self.add_labeled_widget('&Retries:', self.retries)
 
+        # Search volume limit is the max number of volumes to return from
+        # a volume search.
+        self.search_volume_limit = QSpinBox(self)
+        self.search_volume_limit.setMinimum(10)
+        self.search_volume_limit.setMaximum(10000)
+        self.search_volume_limit.setSingleStep(10)
+        self.search_volume_limit.setValue(PREFS['search_volume_limit'])
+        self.add_labeled_widget('&search_volume_limit:',
+                                self.search_volume_limit)
+
     def add_labeled_widget(self, label_text, widget):
         """
         Add a configuration widget, incrementing the index for the next widget.
@@ -73,3 +84,4 @@ class ConfigWidget(QWidget):
         PREFS['request_interval'] = self.request_interval.value()
         PREFS['request_batch_size'] = self.request_batch_size.value()
         PREFS['retries'] = self.retries.value()
+        PREFS['search_volume_limit'] = self.search_volume_limit.value()
