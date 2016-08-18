@@ -231,7 +231,7 @@ class PyComicvineWrapper(object):
     def lookup_issue(self, issue_id):
         """Fetch the metadata we need, given an issue ID."""
         self.log.debug('Looking up issue: %d' % issue_id)
-        issue = pycomicvine.Issue(issue_id,
+        issue = pycomicvine.Issue(id=issue_id,
                                   field_list=['id',
                                               'name',
                                               'volume',
@@ -239,7 +239,8 @@ class PyComicvineWrapper(object):
                                               'person_credits',
                                               'description',
                                               'store_date',
-                                              'cover_date'])
+                                              'cover_date',
+                                              'publisher'])
         if issue and issue.volume:
             self.log.debug('Found issue: %d %s #%s' %
                            (issue_id, issue.volume.name, issue.issue_number))
@@ -294,16 +295,37 @@ class PyComicvineWrapper(object):
 
     @cache_comicvine('search_for_issue_ids')
     @retry_on_comicvine_error()
-    def search_for_issue_ids(self, filters):
+    def search_for_issue_ids(self, volume_ids, issue_number):
         """Search for all issue IDs which match the given filters."""
-        filter_string = ','.join(filters)
-        self.log.debug('Searching for issues: %s' % filter_string)
-        issues = pycomicvine.Issues(filter=filter_string, field_list=['id'])
-        # it is possible for pycomicvine to return iterables containing None
-        issues = [a for a in issues if a is not None]
-        ids = [issue.id for issue in issues]
-        self.log.debug('%d issue ID matches found: %s' % (len(ids), ids))
-        return ids
+
+        page_size = PREFS['issue_search_page_size']
+
+        volume_id_pages = [volume_ids[i:i + page_size]
+                           for i
+                           in range(0, len(volume_ids), page_size)]
+
+        all_issue_ids = []
+
+        for paged_volume_ids in volume_id_pages:
+            filters = ['volume:%s' %
+                       ('|'.join(str(id) for id in paged_volume_ids))]
+
+            if issue_number is not None:
+                filters.append('issue_number:%s' % issue_number)
+
+            filter_string = ','.join(filters)
+            self.log.debug('Searching for issues: %s' % filter_string)
+            issues = pycomicvine.Issues(filter=filter_string, field_list=['id'])
+            # it is possible for pycomicvine to return iterables containing None
+            issues = [a for a in issues if a is not None]
+            paged_issue_ids = [issue.id for issue in issues]
+            self.log.debug('%d issue ID matches found: %s' %
+                           (len(paged_issue_ids), paged_issue_ids))
+            all_issue_ids.extend(paged_issue_ids)
+
+        self.log.debug('%d total issue ID matches found: %s' %
+                       (len(all_issue_ids), all_issue_ids))
+        return all_issue_ids
 
     @cache_comicvine('search_for_volume_ids')
     @retry_on_comicvine_error()

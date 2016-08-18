@@ -40,10 +40,8 @@ def find_volume_ids(title_tokens, log, volume_id=None):
 
 def find_issue_ids(candidate_volume_ids, issue_number, log):
     """Find issue IDs in candidate volumes that match the issue_number."""
-    filters = ['volume:%s' % ('|'.join(str(id) for id in candidate_volume_ids))]
-    if issue_number is not None:
-        filters.append('issue_number:%s' % issue_number)
-    return PyComicvineWrapper(log).search_for_issue_ids(filters)
+    return PyComicvineWrapper(log).search_for_issue_ids(candidate_volume_ids,
+                                                        issue_number)
 
 
 def find_author_issue_ids(query, authors, log):
