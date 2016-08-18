@@ -39,6 +39,12 @@ class Comicvine(Source):
         self.logger = logging.getLogger('urls')
         self.logger.setLevel(logging.DEBUG)
         self.logger.addHandler(CalibreHandler(logging.DEBUG))
+
+        comicvine_logger = logging.getLogger(
+            'calibre_plugins.comicvine.pycomicvine')
+        comicvine_logger.setLevel(logging.DEBUG)
+        comicvine_logger.addHandler(CalibreHandler(logging.DEBUG))
+
         self._qlock = threading.RLock()
         Source.__init__(self, *args, **kwargs)
 
@@ -239,5 +245,10 @@ class CalibreHandler(logging.Handler):
         """
         Send message to the Calibre log.
         """
-        level = getattr(calibre_logging, record.levelname)
+        if hasattr(calibre_logging, record.levelname):
+            level = getattr(calibre_logging, record.levelname)
+        else:
+            level = getattr(calibre_logging,
+                            logging.getLevelName(logging.ERROR))
+
         calibre_logging.default_log.prints(level, record.getMessage())
