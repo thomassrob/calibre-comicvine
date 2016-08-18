@@ -141,6 +141,10 @@ def retry_on_comicvine_error():
                     if error.code == 420:
                         log_rate_limit_error(error)
                         raise
+                    elif error.code in [414]:
+                        # fail immediately on non-recoverable HTTP errors
+                        log_error(error, attempt)
+                        raise
                     else:
                         log_error(error, attempt)
                         if can_retry(attempt):
@@ -294,8 +298,10 @@ class PyComicvineWrapper(object):
         """Search for all issue IDs which match the given filters."""
         filter_string = ','.join(filters)
         self.log.debug('Searching for issues: %s' % filter_string)
-        ids = [issue.id for issue in
-               pycomicvine.Issues(filter=filter_string, field_list=['id'])]
+        issues = pycomicvine.Issues(filter=filter_string, field_list=['id'])
+        # it is possible for pycomicvine to return iterables containing None
+        issues = [a for a in issues if a is not None]
+        ids = [issue.id for issue in issues]
         self.log.debug('%d issue ID matches found: %s' % (len(ids), ids))
         return ids
 
@@ -305,9 +311,11 @@ class PyComicvineWrapper(object):
         """Search for IDs of all volumes which match the given title tokens."""
         query_string = ' AND '.join(title_tokens)
         self.log.debug('Searching for volumes: %s' % query_string)
-        candidate_volume_ids = [volume.id for volume in
-                                pycomicvine.Volumes.search(query=query_string,
-                                                           field_list=['id'])]
+        volumes = pycomicvine.Volumes.search(query=query_string,
+                                             field_list=['id'])
+        # it is possible for pycomicvine to return iterables containing None
+        volumes = [a for a in volumes if a is not None]
+        candidate_volume_ids = [volume.id for volume in volumes]
         self.log.debug('%d volume ID matches found: %s' % (
             len(candidate_volume_ids), candidate_volume_ids))
         return candidate_volume_ids
