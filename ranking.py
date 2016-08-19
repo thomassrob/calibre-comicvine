@@ -8,21 +8,28 @@ import parser
 
 def keygen(metadata, title=None, authors=None, identifiers=None, **kwargs):
     """
-    Implement multi-result comparisons. Lower results are more preferred.
+    Implement multi-result comparisons. Lower rank values are more preferred.
 
-    If the comicvine id matches, return 0.
+    If the comicvine id matches, return 0 (exact match).
 
     Otherwise, score the title and authors.
-    4. Prefer matching authors (the more matches, the higher the preference)
     """
-    if identifiers:
-        try:
-            if metadata.get_identifier('comicvine') == identifiers['comicvine']:
-                return 0
-        except (KeyError, AttributeError):
-            pass
-    return score_title(metadata, title=title, **kwargs) + \
-           score_authors(metadata, authors)
+    if matches_identifier(metadata, identifiers):
+        return 0
+    else:
+        return score_title(metadata, title=title, **kwargs) + \
+               score_authors(metadata, authors)
+
+
+def matches_identifier(metadata, identifiers):
+    """
+    True if the metadata and identifiers have matching comicvine IDs.
+    """
+    return identifiers and \
+           identifiers['comicvine'] and \
+           metadata and \
+           metadata.has_identifier('comicvine') and \
+           metadata.has_identifier('comicvine') == identifiers['comicvine']
 
 
 def score_authors(metadata, authors):
