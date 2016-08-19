@@ -175,9 +175,10 @@ class Comicvine(Source):
             (issue_number, title_tokens) = parser.normalised_title(self, title)
 
             # Look up candidate volume IDs based on title
-            candidate_volume_ids = utils.find_volume_ids(title_tokens,
-                                                         log,
-                                                         volume_id=volume_id)
+            candidate_volumes = utils.find_volumes(title_tokens,
+                                                   log,
+                                                   volume_id=volume_id)
+            candidate_volume_ids = [v.id for v in candidate_volumes]
 
             # Look up candidate issue IDs based on issue number
             issue_ids = utils.find_issue_ids(candidate_volume_ids,

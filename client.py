@@ -203,6 +203,18 @@ def cache_comicvine(cache_name):
     return wrap_function
 
 
+ISSUE_FIELDS = ['id',
+                'name',
+                'volume',
+                'issue_number',
+                'person_credits',
+                'description',
+                'store_date',
+                'cover_date']
+
+VOLUME_FIELDS = ['id', 'start_year', 'publisher']
+
+
 class PyComicvineWrapper(object):
     """
     Wrapper for calls to Comicvine, via the pycomicvine API.
@@ -213,16 +225,17 @@ class PyComicvineWrapper(object):
     def __init__(self, log):
         self.log = log
 
-    @cache_comicvine('lookup_volume_id')
+    @cache_comicvine('lookup_volume')
     @retry_on_comicvine_error()
-    def lookup_volume_id(self, volume_id):
+    def lookup_volume(self, volume_id):
         """Ensure the volume ID passed in matches a real volume."""
         self.log.debug('Looking up volume: %d' % volume_id)
-        volume = pycomicvine.Volume(id=volume_id, field_list=['id'])
+        pycomicvine_volume = pycomicvine.Volume(id=volume_id,
+                                                field_list=VOLUME_FIELDS)
 
-        if volume:
+        if pycomicvine_volume:
             self.log.debug("Found volume: %d" % volume_id)
-            return volume.id
+            return Volume(pycomicvine_volume)
         else:
             self.log.warning("Failed to find volume: %d" % volume_id)
             return None
@@ -231,16 +244,13 @@ class PyComicvineWrapper(object):
     def lookup_issue(self, issue_id):
         """Fetch the metadata we need, given an issue ID."""
         self.log.debug('Looking up issue: %d' % issue_id)
-        issue = pycomicvine.Issue(id=issue_id,
-                                  field_list=['id',
-                                              'name',
-                                              'volume',
-                                              'issue_number',
-                                              'person_credits',
-                                              'description',
-                                              'store_date',
-                                              'cover_date',
-                                              'publisher'])
+
+        # Pycomicvine appears to share object caches between Issues() and Issue(),
+        # and the return data from comicvine isn't actually compatible
+        # between those two APIs
+        clear_pycomicvine_issue_cache(issue_id)
+
+        issue = pycomicvine.Issue(id=issue_id, field_list=ISSUE_FIELDS)
         if issue and issue.volume:
             self.log.debug('Found issue: %d %s #%s' %
                            (issue_id, issue.volume.name, issue.issue_number))
@@ -327,19 +337,61 @@ class PyComicvineWrapper(object):
                        (len(all_issue_ids), all_issue_ids))
         return all_issue_ids
 
-    @cache_comicvine('search_for_volume_ids')
+    @cache_comicvine('search_for_volumes')
     @retry_on_comicvine_error()
-    def search_for_volume_ids(self, title_tokens):
+    def search_for_volumes(self, title_tokens):
         """Search for IDs of all volumes which match the given title tokens."""
         query_string = ' AND '.join(title_tokens)
         self.log.debug('Searching for volumes: %s' % query_string)
         limit = PREFS['search_volume_limit']
-        volumes = pycomicvine.Volumes.search(query=query_string,
-                                             field_list=['id'],
-                                             limit=limit)
+        comicvine_volumes = pycomicvine.Volumes.search(query=query_string,
+                                                       field_list=VOLUME_FIELDS,
+                                                       limit=limit)
+        volumes = map_volumes(comicvine_volumes)
+        self.log.debug('%d volume ID matches found: %s' %
+                       (len(volumes), [v.id for v in volumes]))
+        return volumes
+
+
+class Volume(object):
+    def __init__(self, comicvine_volume):
+        self.id = comicvine_volume.id
+        if is_int(comicvine_volume.start_year):
+            # comicvine returns a mix of int / string / None for start_year
+            # one time, they sent the string "1952?"
+            self.start_year = int(comicvine_volume.start_year)
+
+
+def map_volumes(comicvine_volumes):
+    volumes = []
+    for pycomicvine_volume in comicvine_volumes:
         # it is possible for pycomicvine to return iterables containing None
-        volumes = [a for a in volumes if a is not None]
-        candidate_volume_ids = [volume.id for volume in volumes]
-        self.log.debug('%d volume ID matches found: %s' % (
-            len(candidate_volume_ids), candidate_volume_ids))
-        return candidate_volume_ids
+        if pycomicvine_volume is not None:
+            volumes.append(Volume(pycomicvine_volume))
+    return volumes
+
+
+def is_int(s):
+    if s is None:
+        return False
+    try:
+        int(s)
+        return True
+    except ValueError:
+        return False
+
+
+def clear_pycomicvine_issue_cache(issue_id):
+    """
+    Clear out the instance cache within pycomicvine for the given issue.
+
+    This is a bit of a hack into a private field of pycomicvine,
+    but the reduction in additional queries to Comicvine is significant.
+    """
+    try:
+        type_id = pycomicvine.Types()[pycomicvine.Issue]['id']
+    except KeyError:
+        type_id = None
+    if type_id:
+        key = "{0:d}-{1:d}".format(type_id, issue_id)
+        pycomicvine._cached_resources.pop(key, None)
