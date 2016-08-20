@@ -52,7 +52,7 @@ class TestRanking(unittest.TestCase):
     result = ranking.keygen(metadata=mock_metadata('Dogville', 2.0, mock_date(2010)),
                             title='Dogville #2 (2014)',
                             title_tokens_function=mock_tokens_function(['dogville']))
-    self.assertEqual(4, result)
+    self.assertEqual(12, result)
 
   def test_keygen_with_missing_publish_date_and_year(self):
     result = ranking.keygen(metadata=mock_metadata('Dogville', 2.0, None),
@@ -109,10 +109,10 @@ class TestRanking(unittest.TestCase):
     self.assertEqual(0, ranking.score_publish_date('Dogville #2', mock_date(2000)))
 
     # mismatched data
-    self.assertEqual(16, ranking.score_publish_date('Dogville #2 (2000)', mock_date(1984)))
-    self.assertEqual(1, ranking.score_publish_date('Dogville #2 (2000)', mock_date(1999)))
-    self.assertEqual(1, ranking.score_publish_date('Dogville #2 (2000)', mock_date(2001)))
-    self.assertEqual(16, ranking.score_publish_date('Dogville #2 (2000)', mock_date(2016)))
+    self.assertEqual(48, ranking.score_publish_date('Dogville #2 (2000)', mock_date(1984)))
+    self.assertEqual(3, ranking.score_publish_date('Dogville #2 (2000)', mock_date(1999)))
+    self.assertEqual(3, ranking.score_publish_date('Dogville #2 (2000)', mock_date(2001)))
+    self.assertEqual(48, ranking.score_publish_date('Dogville #2 (2000)', mock_date(2016)))
 
     # matching year and publish date
     self.assertEqual(0, ranking.score_publish_date('Dogville #2 (2000)', mock_date(2000)))

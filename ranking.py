@@ -91,7 +91,7 @@ def score_publish_date(input_title, publish_date):
         match_year = re.compile(r'\((\d{4})\)')
         year = match_year.search(input_title)
         if year:
-            return abs(publish_date.year - int(year.group(1)))
+            return abs(publish_date.year - int(year.group(1))) * 3
         else:
             return 0
     else:
