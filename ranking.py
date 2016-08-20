@@ -6,7 +6,11 @@ import re
 import parser
 
 
-def keygen(metadata, title=None, authors=None, identifiers=None, **kwargs):
+def keygen(metadata,
+           title=None,
+           title_tokens_function=None,
+           authors=None,
+           identifiers=None):
     """
     Implement multi-result comparisons. Lower rank values are more preferred.
 
@@ -17,8 +21,11 @@ def keygen(metadata, title=None, authors=None, identifiers=None, **kwargs):
     if matches_identifier(metadata, identifiers):
         return 0
     else:
-        return score_title(metadata, title=title, **kwargs) + \
-               score_authors(metadata, authors)
+        breakdown = score_breakdown(metadata,
+                                    title,
+                                    title_tokens_function,
+                                    authors)
+        return sum(breakdown.values())
 
 
 def matches_identifier(metadata, identifiers):
@@ -45,24 +52,32 @@ def score_authors(metadata, authors):
     return score
 
 
-def score_title(metadata, title=None, issue_number=None, title_tokens=None):
+def score_breakdown(metadata, title, title_tokens_function, authors):
     """
     Calculate title-matching score.
     """
     if title is None:
-        return 0
+        return {}
 
     input_title = sanitize_title(title)
     issue_title = format_issue_title(metadata.series,
                                      metadata.series_index)
 
-    return score_publish_date(title, metadata.pubdate) + \
-           score_title_tokens(metadata.series, title_tokens) + \
-           score_levenshtein(input_title, issue_title) + \
-           score_title_length(input_title, issue_title) + \
-           score_issue_number(input_title, issue_number,
-                              metadata.series_index) + \
-           score_comments(metadata.comments)
+    input_issue_number = parser.get_issue_number(title)
+    input_title_tokens = parser.get_title_tokens(title, title_tokens_function)
+
+    return {
+        'authors': score_authors(metadata, authors),
+        'publish_date': score_publish_date(title, metadata.pubdate),
+        'title_tokens': score_title_tokens(metadata.series,
+                                           input_title_tokens),
+        'levenshtein': score_levenshtein(input_title, issue_title),
+        'title_length': score_title_length(input_title, issue_title),
+        'issue_number': score_issue_number(input_title,
+                                           input_issue_number,
+                                           metadata.series_index),
+        'comments': score_comments(metadata.comments),
+    }
 
 
 def score_publish_date(input_title, publish_date):
@@ -124,7 +139,7 @@ def score_issue_number(input_title, issue_number, series_index):
     Prefer results which have the series index number in the input title.
     """
     score = 0
-    if issue_number is not None and series_index != issue_number:
+    if issue_number is not None and float(series_index) != float(issue_number):
         score += 50
     if format_issue_number(series_index) not in input_title:
         # Penalize entries where the issue number

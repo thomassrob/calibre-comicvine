@@ -142,13 +142,11 @@ class Comicvine(Source):
 
         Used by Calibre to sort results.
         """
-        (issue_number, title_tokens) = parser.normalised_title(self, title)
         return partial(ranking.keygen,
                        title=title,
+                       title_tokens_function=self.get_title_tokens,
                        authors=authors,
-                       identifiers=identifiers,
-                       issue_number=issue_number,
-                       title_tokens=title_tokens)
+                       identifiers=identifiers)
 
     def identify(self, log, result_queue, abort,
                  title=None, authors=None, identifiers=None, timeout=30):
@@ -172,7 +170,8 @@ class Comicvine(Source):
             else:
                 volume_id = None
 
-            (issue_number, title_tokens) = parser.normalised_title(self, title)
+            title_tokens = parser.get_title_tokens(title, self.get_title_tokens)
+            issue_number = parser.get_issue_number(title)
 
             # Look up candidate volume IDs based on title
             candidate_volumes = utils.find_volumes(title_tokens,
