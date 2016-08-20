@@ -367,12 +367,13 @@ class Issue(object):
 
 
 def map_volumes(comicvine_volumes):
-    limit = PREFS['search_volume_limit']
+    limit = min(PREFS['search_volume_limit'], len(comicvine_volumes))
     volumes = []
-    for pycomicvine_volume in comicvine_volumes[:limit]:
-        # it is possible for pycomicvine to return iterables containing None
-        if pycomicvine_volume is not None:
-            volumes.append(Volume(pycomicvine_volume))
+    if limit > 0:
+        for pycomicvine_volume in comicvine_volumes[:limit]:
+            # it is possible for pycomicvine to return iterables containing None
+            if pycomicvine_volume is not None:
+                volumes.append(Volume(pycomicvine_volume))
     return volumes
 
 
