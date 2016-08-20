@@ -20,8 +20,16 @@ def normalised_title(title, title_tokens_function=None):
     replacements = (
         (r'((?:^|\s)(?:\w\.){2,})',
          lambda match: match.group(0).replace('.', '')),
+
+        # eg "(of 3)" or "or 3"
         (r'\s\(?of \d+\)?', ''),
+
+        # "v2" or "vol2" or "v 2" or "vol 2"
         (r'(?:v|vol)\s?\d+', ''),
+
+        # "c2c" meaning cover to cover
+        (r'\s(c2c)\s', ''),
+
         (r'\([^)]+\)', ''),
         (u'(?:# ?)?0*([\d\xbd]+[^:\s]*):?[^\d]*$', '#\g<1>'),
         (r'\s{2,}', ' '),
@@ -34,6 +42,7 @@ def normalised_title(title, title_tokens_function=None):
         issue_number = issue_match.group(1)
         title = issue_pattern.sub('', title)
     if title_tokens_function is not None:
+        title = title.strip()
         for token in title_tokens_function(title):
             title_tokens.append(token.lower())
     return issue_number, title_tokens

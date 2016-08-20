@@ -17,6 +17,7 @@ class TestParser(unittest.TestCase):
             'Spider-Man 003.1 (2010) (extra stuff)', '3.1')
         self.run_get_issue_number_test(
             'Buffy Season 10 015 (2015) (Digital) (Cypher 2.0-Empire)', '15')
+        self.run_get_issue_number_test('Jughead #210 (2016) (Jojo)', '210')
 
     def run_get_issue_number_test(self,
                                   input_title,
@@ -30,16 +31,22 @@ class TestParser(unittest.TestCase):
                                        'superdog in space')
         self.run_get_title_tokens_test(
             'Magnus, Robot Fighter 01 (2010) (two covers) (Minutemen-DTs)',
-            'Magnus, Robot Fighter ')
+            'Magnus, Robot Fighter')
         self.run_get_title_tokens_test(
             'Spider-Man 003.1 (2010) (extra stuff)',
-            'Spider-Man ')
+            'Spider-Man')
         self.run_get_title_tokens_test(
             'Buffy Season 10 015 (2015) (Digital) (Cypher 2.0-Empire)',
-            'Buffy Season 10 ')
-        # self.run_get_title_tokens_test(
-        #    'Buffy Season 10 v01 - New Rules (2014) (digital) (The Magicians-Empire)',
-        #    'Buffy Season 10 ')
+            'Buffy Season 10')
+        self.run_get_title_tokens_test(
+            'Archie v2 010 (2016) c2c (Jojo)',
+            'Archie')
+        self.run_get_title_tokens_test(
+            'Jughead #210 (2016) (Jojo)',
+            'Jughead')
+        self.run_get_title_tokens_test(
+            'Buffy Season 10 015 (of 4) (2015) (Digital) (Cypher 2.0-Empire)',
+            'Buffy Season 10')
 
     def run_get_title_tokens_test(self,
                                   input_title,
