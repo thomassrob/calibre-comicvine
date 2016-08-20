@@ -317,10 +317,8 @@ class PyComicvineWrapper(object):
         """Search for IDs of all volumes which match the given title tokens."""
         query_string = ' AND '.join(title_tokens)
         self.log.debug('Searching for volumes: %s' % query_string)
-        limit = PREFS['search_volume_limit']
         comicvine_volumes = pycomicvine.Volumes.search(query=query_string,
-                                                       field_list=VOLUME_FIELDS,
-                                                       limit=limit)
+                                                       field_list=VOLUME_FIELDS)
         volumes = map_volumes(comicvine_volumes)
         self.log.debug('%d volume ID matches found: %s' %
                        (len(volumes), [v.id for v in volumes]))
@@ -345,17 +343,13 @@ class Issue(object):
         self.store_date = comicvine_issue.store_date
         self.cover_date = comicvine_issue.cover_date
         self.authors = [p.name for p in comicvine_issue.person_credits]
-        self.init_volume_fields(comicvine_issue)
-        self.init_image_fields(comicvine_issue)
 
-    def init_volume_fields(self, comicvine_issue):
         if comicvine_issue.volume:
             self.volume_id = comicvine_issue.volume.id
             self.volume_name = comicvine_issue.volume.name
             if comicvine_issue.volume.publisher:
                 self.publisher_name = comicvine_issue.volume.publisher.name
 
-    def init_image_fields(self, comicvine_issue):
         if comicvine_issue.image:
             urls = []
             for url_key in ['super_url', 'medium_url', 'small_url']:
@@ -373,8 +367,9 @@ class Issue(object):
 
 
 def map_volumes(comicvine_volumes):
+    limit = PREFS['search_volume_limit']
     volumes = []
-    for pycomicvine_volume in comicvine_volumes:
+    for pycomicvine_volume in comicvine_volumes[:limit]:
         # it is possible for pycomicvine to return iterables containing None
         if pycomicvine_volume is not None:
             volumes.append(Volume(pycomicvine_volume))
@@ -395,7 +390,7 @@ def clear_pycomicvine_issue_cache(issue_id):
     """
     Clear out the instance cache within pycomicvine for the given issue.
 
-    This is a bit of a hack into a private field of pycomicvine,
+    This is a bit of a hack into a protected field of pycomicvine,
     but the reduction in additional queries to Comicvine is significant.
     """
     try:
