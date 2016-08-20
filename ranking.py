@@ -26,10 +26,10 @@ def matches_identifier(metadata, identifiers):
     True if the metadata and identifiers have matching comicvine IDs.
     """
     return identifiers and \
-           identifiers['comicvine'] and \
+           'comicvine' in identifiers and \
            metadata and \
            metadata.has_identifier('comicvine') and \
-           metadata.has_identifier('comicvine') == identifiers['comicvine']
+           metadata.get_identifiers()['comicvine'] == identifiers['comicvine']
 
 
 def score_authors(metadata, authors):
