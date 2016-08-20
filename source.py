@@ -206,7 +206,11 @@ class Comicvine(Source):
         if identifiers and 'comicvine' in identifiers:
             client = PyComicvineWrapper(log)
             comicvine_id = int(identifiers['comicvine'])
-            urls = client.lookup_issue_image_urls(comicvine_id, get_best_cover)
+            issue = client.lookup_issue(comicvine_id)
+
+            urls = issue.image_urls if issue else []
+            if urls and get_best_cover:
+                urls = urls[:1]
 
             for url in urls:
                 browser = self.browser

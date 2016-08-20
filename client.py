@@ -210,7 +210,8 @@ ISSUE_FIELDS = ['id',
                 'person_credits',
                 'description',
                 'store_date',
-                'cover_date']
+                'cover_date',
+                'image']
 
 VOLUME_FIELDS = ['id', 'start_year', 'publisher']
 
@@ -240,21 +241,22 @@ class PyComicvineWrapper(object):
             self.log.warning("Failed to find volume: %d" % volume_id)
             return None
 
+    @cache_comicvine('lookup_issue')
     @retry_on_comicvine_error()
     def lookup_issue(self, issue_id):
         """Fetch the metadata we need, given an issue ID."""
         self.log.debug('Looking up issue: %d' % issue_id)
 
-        # Pycomicvine appears to share object caches between Issues() and Issue(),
-        # and the return data from comicvine isn't actually compatible
-        # between those two APIs
+        # Pycomicvine appears to share object caches between
+        # Issues() and Issue(), and the return data from comicvine
+        # isn't actually compatible between those two APIs
         clear_pycomicvine_issue_cache(issue_id)
 
         issue = pycomicvine.Issue(id=issue_id, field_list=ISSUE_FIELDS)
         if issue and issue.volume:
             self.log.debug('Found issue: %d %s #%s' %
                            (issue_id, issue.volume.name, issue.issue_number))
-            return issue
+            return Issue(issue)
         elif issue:
             self.log.warning("Found issue but failed to find issue volume: %d" %
                              issue_id)
@@ -262,31 +264,6 @@ class PyComicvineWrapper(object):
         else:
             self.log.warning("Failed to find issue: %d" % issue_id)
             return None
-
-    @cache_comicvine('lookup_issue_image_urls')
-    @retry_on_comicvine_error()
-    def lookup_issue_image_urls(self, issue_id, get_best_cover=False):
-        """Retrieve cover urls, in quality order."""
-        self.log.debug('Looking up issue image: %d' % issue_id)
-        issue = pycomicvine.Issue(issue_id, field_list=['image'])
-
-        if issue and issue.image:
-            urls = []
-            for url_key in ['super_url', 'medium_url', 'small_url']:
-                if url_key in issue.image:
-                    urls.append(issue.image[url_key])
-                    if get_best_cover:
-                        break
-
-            self.log.debug("Found issue image urls: %d %s" % (issue_id, urls))
-            return urls
-        elif issue:
-            self.log.warning(
-                "Found issue but failed to find issue image: %d" % issue_id)
-            return []
-        else:
-            self.log.warning("Failed to find issue: %d" % issue_id)
-            return []
 
     @retry_on_comicvine_error()
     def search_for_authors(self, author_tokens):
@@ -360,6 +337,42 @@ class Volume(object):
             # comicvine returns a mix of int / string / None for start_year
             # one time, they sent the string "1952?"
             self.start_year = int(comicvine_volume.start_year)
+
+
+class Issue(object):
+    def __init__(self, comicvine_issue):
+        self.id = comicvine_issue.id
+        self.name = comicvine_issue.name
+        self.issue_number = comicvine_issue.issue_number
+        self.description = comicvine_issue.description
+        self.store_date = comicvine_issue.store_date
+        self.cover_date = comicvine_issue.cover_date
+        self.authors = [p.name for p in comicvine_issue.person_credits]
+        self.init_volume_fields(comicvine_issue)
+        self.init_image_fields(comicvine_issue)
+
+    def init_volume_fields(self, comicvine_issue):
+        if comicvine_issue.volume:
+            self.volume_id = comicvine_issue.volume.id
+            self.volume_name = comicvine_issue.volume.name
+            if comicvine_issue.volume.publisher:
+                self.publisher_name = comicvine_issue.volume.publisher.name
+
+    def init_image_fields(self, comicvine_issue):
+        if comicvine_issue.image:
+            urls = []
+            for url_key in ['super_url', 'medium_url', 'small_url']:
+                if url_key in comicvine_issue.image:
+                    urls.append(comicvine_issue.image[url_key])
+            self.image_urls = urls
+        else:
+            self.image_urls = []
+
+    def get_full_title(self):
+        title = '%s #%s' % (self.volume_name, self.issue_number)
+        if self.name:
+            title += ': %s' % self.name
+        return title
 
 
 def map_volumes(comicvine_volumes):

@@ -12,19 +12,14 @@ def build_meta(log, issue_id):
     issue = PyComicvineWrapper(log).lookup_issue(issue_id)
     if not issue:
         return None
-    title = '%s #%s' % (issue.volume.name, issue.issue_number)
-    if issue.name:
-        title += ': %s' % (issue.name)
-    authors = [p.name for p in issue.person_credits]
-    meta = Metadata(title, authors)
-    meta.series = issue.volume.name
+    meta = Metadata(issue.get_full_title(), issue.authors)
+    meta.series = issue.volume_name
     meta.series_index = issue.issue_number
     meta.set_identifier('comicvine', str(issue.id))
-    meta.set_identifier('comicvine-volume', str(issue.volume.id))
+    meta.set_identifier('comicvine-volume', str(issue.volume_id))
     meta.comments = issue.description
     meta.has_cover = False
-    if issue.volume.publisher:
-        meta.publisher = issue.volume.publisher.name
+    meta.publisher = issue.publisher_name
     meta.pubdate = issue.store_date or issue.cover_date
     return meta
 
