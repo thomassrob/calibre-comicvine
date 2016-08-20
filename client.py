@@ -8,31 +8,30 @@ import threading
 import os
 from urllib2 import HTTPError
 
-from calibre.utils.config import JSONConfig
-
 import pyfscache
 import pycomicvine
 from pycomicvine.error import RateLimitExceededError, InvalidResourceError
 
 from config import PREFS
 
+# private bucket state - only access or modify this via RLock'ed TokenBucket
+_bucket_state = {
+    'tokens': 0,
+    'update': time.time(),
+}
+
 
 class TokenBucket(object):
     """Class to hand out tokens to allow calls to comicvine."""
 
     def __init__(self):
-        """Give this instance a re-entrant lock."""
+        """Give the instance a re-entrant lock."""
         self.lock = threading.RLock()
-        params = JSONConfig('plugins/comicvine_tokens')
-        params.defaults['tokens'] = 0
-        params.defaults['update'] = time.time()
-        self.params = params
 
     def consume(self):
         """Acquire a token from a pool of max tokens."""
         with self.lock:
-            self.params.refresh()
-            time_since_last_request = time.time() - self.params['update']
+            time_since_last_request = time.time() - _bucket_state['update']
             interval = PREFS['request_interval']
             while self.tokens < 1:
                 if interval > time_since_last_request:
@@ -41,29 +40,27 @@ class TokenBucket(object):
                     delay = interval
                 logging.warning('%0.2f seconds to next request token', delay)
                 time.sleep(delay)
-            self.params['tokens'] -= 1
+            _bucket_state['tokens'] -= 1
 
     @property
     def tokens(self):
         """Return the number of available tokens."""
         with self.lock:
-            self.params.refresh()
-
             pool_size = PREFS['request_batch_size']
 
-            if self.params['tokens'] < pool_size:
+            if _bucket_state['tokens'] < pool_size:
                 now = time.time()
-                elapsed = now - self.params['update']
+                elapsed = now - _bucket_state['update']
                 if elapsed > 0:
                     new_tokens = int(elapsed *
                                      (1.0 / PREFS['request_interval']))
                     if new_tokens:
-                        if (new_tokens + self.params['tokens']) < pool_size:
-                            self.params['tokens'] += new_tokens
+                        if (new_tokens + _bucket_state['tokens']) < pool_size:
+                            _bucket_state['tokens'] += new_tokens
                         else:
-                            self.params['tokens'] = pool_size
-                        self.params['update'] = now
-            return self.params['tokens']
+                            _bucket_state['tokens'] = pool_size
+                        _bucket_state['update'] = now
+            return _bucket_state['tokens']
 
 
 token_bucket = TokenBucket()
