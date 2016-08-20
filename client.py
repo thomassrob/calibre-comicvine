@@ -177,7 +177,7 @@ def cache_comicvine(cache_name):
 
         if temp_directory is not None:
             path = '%s/calibre-comicvine/%s' % (temp_directory, cache_name)
-            cache_it = pyfscache.FSCache(path, hours=1)
+            cache_it = pyfscache.FSCache(path, hours=12)
 
             def instance_function(*args, **kwargs):
                 """
