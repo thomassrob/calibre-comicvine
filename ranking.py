@@ -128,7 +128,9 @@ def score_title_length(input_title, result_title):
     """
     Prefer input titles which more closely match the canonical title
     """
-    return abs(len(input_title) - len(result_title))
+    match = 0 if input_title == result_title else 1
+
+    return match + abs(len(input_title) - len(result_title))
 
 
 def score_issue_number(input_title, issue_number, series_index):
