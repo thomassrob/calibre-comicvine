@@ -68,9 +68,9 @@ class TestRanking(unittest.TestCase):
 
   def test_keygen_with_extra_tokens(self):
     result = ranking.keygen(metadata=mock_metadata('Dogville', 2.0),
-                            title='Dogville #2',
+                            title='Dogville Awakening #2',
                             title_tokens_function=mock_tokens_function(['dogville', 'awakening']))
-    self.assertEqual(10, result)
+    self.assertEqual(52, result)
 
   def test_keygen_issue_number_does_not_match_series_index(self):
     result = ranking.keygen(metadata=mock_metadata('Dogville', 2.0),
@@ -82,7 +82,7 @@ class TestRanking(unittest.TestCase):
     result = ranking.keygen(metadata=mock_metadata('Dogville', 2.0),
                             title='Dogville',
                             title_tokens_function=mock_tokens_function(['dogville']))
-    self.assertEqual(29, result)
+    self.assertEqual(33, result)
 
   def test_keygen_generic_comments(self):
     result = ranking.keygen(metadata=mock_metadata(series='Dogville',

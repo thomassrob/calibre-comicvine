@@ -59,7 +59,7 @@ def score_breakdown(metadata, title, title_tokens_function, authors):
     if title is None:
         return {}
 
-    input_title = sanitize_title(title)
+    input_title = sanitize_title(title, title_tokens_function)
     issue_title = format_issue_title(metadata.series,
                                      metadata.series_index)
 
@@ -160,15 +160,15 @@ def score_comments(comments):
         return 0
 
 
-def sanitize_title(input_title):
+def sanitize_title(input_title, title_tokens_function):
     """
     Given the title from the initial input, strip the date out of it,
     lower-case it, and strip off any leading/trailing whitespace.
     """
-    year = parser.get_year(input_title)
-    if year is not None:
-        input_title = parser.rreplace(input_title, '(%s)' % year, '')
-    return input_title.lower().strip()
+    title_tokens = parser.get_title_tokens(input_title, title_tokens_function)
+    issue_number = parser.get_issue_number(input_title)
+
+    return ('%s #%s' % (' '.join(title_tokens), issue_number)).lower().strip()
 
 
 def format_issue_title(series, series_index):
