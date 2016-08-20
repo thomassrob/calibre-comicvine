@@ -347,8 +347,14 @@ class Issue(object):
         if comicvine_issue.volume:
             self.volume_id = comicvine_issue.volume.id
             self.volume_name = comicvine_issue.volume.name
-            if comicvine_issue.volume.publisher:
-                self.publisher_name = comicvine_issue.volume.publisher.name
+        else:
+            self.volume_id = None
+            self.volume_name = None
+
+        if comicvine_issue.volume and comicvine_issue.volume.publisher:
+            self.publisher_name = comicvine_issue.volume.publisher.name
+        else:
+            self.publisher_name = None
 
         if comicvine_issue.image:
             urls = []
