@@ -45,7 +45,7 @@ class TestRanking(unittest.TestCase):
                                 title='Dogville #2',
                                 title_tokens_function=mock_tokens_function(
                                     ['dogville']))
-        self.assertEqual(72, result)
+        self.assertEqual(62, result)
 
     def test_keygen_with_matching_year(self):
         result = ranking.keygen(
@@ -87,7 +87,7 @@ class TestRanking(unittest.TestCase):
                                 title='Dogville #5',
                                 title_tokens_function=mock_tokens_function(
                                     ['dogville']))
-        self.assertEqual(71, result)
+        self.assertEqual(61, result)
 
     def test_keygen_series_index_not_in_title(self):
         result = ranking.keygen(metadata=mock_metadata('Dogville', 2.0),

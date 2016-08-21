@@ -73,8 +73,7 @@ def score_breakdown(metadata, title, title_tokens_function, authors):
                                            input_title_tokens),
         'levenshtein': score_levenshtein(input_title, issue_title),
         'title_length': score_title_length(input_title, issue_title),
-        'issue_number': score_issue_number(input_title,
-                                           input_issue_number,
+        'issue_number': score_issue_number(input_issue_number,
                                            metadata.series_index),
         'comments': score_comments(metadata.comments),
     }
@@ -133,21 +132,19 @@ def score_title_length(input_title, result_title):
     return match + abs(len(input_title) - len(result_title))
 
 
-def score_issue_number(input_title, issue_number, series_index):
+def score_issue_number(issue_number, series_index):
     """
     Prefer results which have series index numbers which match
     the input issue number.
 
     Prefer results which have the series index number in the input title.
     """
-    score = 0
-    if issue_number is not None and float(series_index) != float(issue_number):
-        score += 50
-    if format_issue_number(series_index) not in input_title:
-        # Penalize entries where the issue number
-        # (or at least its formatted substring) is not in the title.
-        score += 10
-    return score
+    if issue_number is None:
+        return 10
+    elif float(series_index) != float(issue_number):
+        return 50
+    else:
+        return 0
 
 
 def score_comments(comments):
