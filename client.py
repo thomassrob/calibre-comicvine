@@ -63,7 +63,7 @@ class TokenBucket(object):
             return _bucket_state['tokens']
 
 
-token_bucket = TokenBucket()
+_token_bucket = TokenBucket()
 
 
 def retry_on_comicvine_error():
@@ -127,7 +127,7 @@ def retry_on_comicvine_error():
                 )
 
             for attempt in range(1, max_attempts + 1):
-                token_bucket.consume()
+                _token_bucket.consume()
 
                 try:
                     return target_function(*args, **kwargs)
@@ -326,15 +326,23 @@ class PyComicvineWrapper(object):
 
 
 class Volume(object):
+    """
+    Eager-loaded data about a Comicvine volume. Serializable for caching.
+    """
+
     def __init__(self, comicvine_volume):
         self.id = comicvine_volume.id
         if is_int(comicvine_volume.start_year):
-            # comicvine returns a mix of int / string / None for start_year
-            # one time, they sent the string "1952?"
+            # Comicvine returns a mix of int / string / None for start_year.
+            # One time, they sent the string "1952?"
             self.start_year = int(comicvine_volume.start_year)
 
 
 class Issue(object):
+    """
+    Eager-loaded data about a Comicvine issue. Serializable for caching.
+    """
+
     def __init__(self, comicvine_issue):
         self.id = comicvine_issue.id
         self.name = comicvine_issue.name
@@ -373,6 +381,9 @@ class Issue(object):
 
 
 def map_volumes(comicvine_volumes):
+    """
+    Convert a list of Comicvine volumes.
+    """
     limit = min(PREFS['search_volume_limit'], len(comicvine_volumes))
     volumes = []
     if limit > 0:
@@ -384,6 +395,9 @@ def map_volumes(comicvine_volumes):
 
 
 def is_int(s):
+    """
+    Return true if the input can be converted to an int.
+    """
     if s is None:
         return False
     try:
