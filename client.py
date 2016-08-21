@@ -351,8 +351,6 @@ class Issue(object):
         self.name = comicvine_issue.name
         self.issue_number = comicvine_issue.issue_number
         self.description = comicvine_issue.description
-        self.store_date = comicvine_issue.store_date
-        self.cover_date = comicvine_issue.cover_date
         self.authors = [p.name for p in comicvine_issue.person_credits]
 
         if comicvine_issue.volume:
@@ -375,6 +373,8 @@ class Issue(object):
             self.image_urls = urls
         else:
             self.image_urls = []
+
+        self.date = comicvine_issue.store_date or comicvine_issue.cover_date
 
     def get_full_title(self):
         """

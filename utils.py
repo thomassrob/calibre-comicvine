@@ -10,18 +10,19 @@ from client import PyComicvineWrapper
 def build_meta(log, issue_id):
     """Build metadata record based on comicvine issue_id."""
     issue = PyComicvineWrapper(log).lookup_issue(issue_id)
-    if not issue:
+    if issue:
+        meta = Metadata(issue.get_full_title(), issue.authors)
+        meta.series = issue.volume_name
+        meta.series_index = issue.issue_number
+        meta.set_identifier('comicvine', str(issue.id))
+        meta.set_identifier('comicvine-volume', str(issue.volume_id))
+        meta.comments = issue.description
+        meta.has_cover = False
+        meta.publisher = issue.publisher_name
+        meta.pubdate = issue.date
+        return meta
+    else:
         return None
-    meta = Metadata(issue.get_full_title(), issue.authors)
-    meta.series = issue.volume_name
-    meta.series_index = issue.issue_number
-    meta.set_identifier('comicvine', str(issue.id))
-    meta.set_identifier('comicvine-volume', str(issue.volume_id))
-    meta.comments = issue.description
-    meta.has_cover = False
-    meta.publisher = issue.publisher_name
-    meta.pubdate = issue.store_date or issue.cover_date
-    return meta
 
 
 def find_volumes(title_tokens, log, volume_id=None):
