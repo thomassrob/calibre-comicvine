@@ -374,6 +374,10 @@ class Issue(object):
             self.image_urls = []
 
     def get_full_title(self):
+        """
+        Format the full title of an issue, including the
+        issue's subtitle if present.
+        """
         title = '%s #%s' % (self.volume_name, self.issue_number)
         if self.name:
             title += ': %s' % self.name
@@ -394,14 +398,14 @@ def map_volumes(comicvine_volumes):
     return volumes
 
 
-def is_int(s):
+def is_int(value):
     """
     Return true if the input can be converted to an int.
     """
-    if s is None:
+    if value is None:
         return False
     try:
-        int(s)
+        int(value)
         return True
     except ValueError:
         return False
