@@ -210,7 +210,7 @@ ISSUE_FIELDS = ['id',
                 'cover_date',
                 'image']
 
-VOLUME_FIELDS = ['id', 'start_year', 'publisher']
+VOLUME_FIELDS = ['id', 'name', 'start_year', 'publisher']
 
 
 class PyComicvineWrapper(object):
@@ -332,10 +332,13 @@ class Volume(object):
 
     def __init__(self, comicvine_volume):
         self.id = comicvine_volume.id
+        self.name = comicvine_volume.name
         if is_int(comicvine_volume.start_year):
             # Comicvine returns a mix of int / string / None for start_year.
             # One time, they sent the string "1952?"
             self.start_year = int(comicvine_volume.start_year)
+        else:
+            self.start_year = None
 
 
 class Issue(object):
