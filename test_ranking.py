@@ -114,6 +114,15 @@ class TestRanking(unittest.TestCase):
                                     ['dogville']))
         self.assertEqual(50, result)
 
+    def test_keygen_comments_indicating_translated_collection(self):
+        result = ranking.keygen(metadata=mock_metadata(series='Dogville',
+                                                       series_index=2.0,
+                                                       comments='Translates issues #1-10'),
+                                title='Dogville #2',
+                                title_tokens_function=mock_tokens_function(
+                                    ['dogville']))
+        self.assertEqual(20, result)
+
     def test_score_publish_date(self):
         # missing publish date in metadata
         self.assertEqual(10, ranking.score_publish_date('Dogville #2', None))

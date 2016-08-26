@@ -134,14 +134,19 @@ def score_issue_number(issue_number, series_index):
 
 def score_comments(comments):
     """
-    De-preference TPBs by looking for the phrases in the comments
-    "collecting issues", "containing issues", etc.
+    De-preference collections.
     """
-    collection = re.compile(r'(?:collect|contain)(?:s|ing) issues')
-    if comments and collection.search(comments.lower()):
-        return 50
-    else:
-        return 0
+    if comments:
+        collection = re.compile(r'(?:collect|contain)(?:s|ing) issues')
+        if collection.search(comments.lower()):
+            # Prefer single-issue results by looking for the phrases
+            # "collecting issues", "containing issues", etc.
+            return 50
+        if comments.find('Translates') != -1 and comments.count("\n") <= 1:
+            # single line comments with a sentence starting with "Translates"
+            # are usually translated compilations
+            return 20
+    return 0
 
 
 def sanitize_title(input_title, title_tokens_function):
