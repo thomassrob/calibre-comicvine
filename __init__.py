@@ -24,14 +24,27 @@ if __name__ == '__main__':
 
     def get_integration_suites():
         test_loader = unittest.TestLoader()
-        return [test_loader.loadTestsFromModule(test_plugin)]
+        return [test_loader.loadTestsFromTestCase(test_plugin.TestFileList),
+                test_loader.loadTestsFromTestCase(test_plugin.TestPlugin)]
+
+
+    def get_known_failing_integration_suites():
+        test_loader = unittest.TestLoader()
+        return [
+            test_loader.loadTestsFromTestCase(test_plugin.TestFailingFileList)]
 
 
     def run_tests():
         test_runner = unittest.TextTestRunner()
 
+        # for test_suite in get_unit_suites():
+        #     test_runner.run(test_suite)
+
         for test_suite in get_integration_suites():
             test_runner.run(test_suite)
+
+        # for test_suite in get_known_failing_integration_suites():
+        #     test_runner.run(test_suite)
 
 
     run_tests()

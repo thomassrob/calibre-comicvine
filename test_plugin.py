@@ -22,6 +22,21 @@ class TestFileList(unittest.TestCase):
         test_identify_plugin(Comicvine.name, tuples)
 
 
+class TestFailingFileList(unittest.TestCase):
+    def test_list(self):
+        f = open("test/failing_titles.txt")
+        lines = f.readlines()
+        f.close()
+
+        lines = [line.replace("\n", "") for line in lines]
+        lines = [line.split('|') for line in lines]
+
+        tuples = [({'title': line[1]}, [comicvine_id_test(line[0])])
+                  for line in lines]
+
+        test_identify_plugin(Comicvine.name, tuples)
+
+
 class TestPlugin(unittest.TestCase):
     def test_title_and_single_author_match(self):
         test_identify_plugin(Comicvine.name, [(
