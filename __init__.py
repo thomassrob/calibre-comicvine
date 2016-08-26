@@ -37,8 +37,8 @@ if __name__ == '__main__':
     def run_tests():
         test_runner = unittest.TextTestRunner()
 
-        # for test_suite in get_unit_suites():
-        #     test_runner.run(test_suite)
+        for test_suite in get_unit_suites():
+            test_runner.run(test_suite)
 
         for test_suite in get_integration_suites():
             test_runner.run(test_suite)
