@@ -38,14 +38,14 @@ class TestRanking(unittest.TestCase):
                                 title='Dogville #2.1',
                                 title_tokens_function=mock_tokens_function(
                                     ['dogville']))
-        self.assertEqual(62, result)
+        self.assertEqual(53, result)
 
     def test_keygen_float_index_mismatch_int_title(self):
         result = ranking.keygen(metadata=mock_metadata('Dogville', 2.1),
                                 title='Dogville #2',
                                 title_tokens_function=mock_tokens_function(
                                     ['dogville']))
-        self.assertEqual(62, result)
+        self.assertEqual(53, result)
 
     def test_keygen_with_matching_year(self):
         result = ranking.keygen(
@@ -80,21 +80,21 @@ class TestRanking(unittest.TestCase):
                                 title='Dogville Awakening #2',
                                 title_tokens_function=mock_tokens_function(
                                     ['dogville', 'awakening']))
-        self.assertEqual(53, result)
+        self.assertEqual(21, result)
 
     def test_keygen_issue_number_does_not_match_series_index(self):
         result = ranking.keygen(metadata=mock_metadata('Dogville', 2.0),
                                 title='Dogville #5',
                                 title_tokens_function=mock_tokens_function(
                                     ['dogville']))
-        self.assertEqual(61, result)
+        self.assertEqual(51, result)
 
     def test_keygen_series_index_not_in_title(self):
         result = ranking.keygen(metadata=mock_metadata('Dogville', 2.0),
                                 title='Dogville',
                                 title_tokens_function=mock_tokens_function(
                                     ['dogville']))
-        self.assertEqual(34, result)
+        self.assertEqual(14, result)
 
     def test_keygen_generic_comments(self):
         result = ranking.keygen(metadata=mock_metadata(series='Dogville',
@@ -161,23 +161,6 @@ class TestRanking(unittest.TestCase):
         self.assertEqual(0, ranking.score_title_tokens('  Dogville  ',
                                                        ['dogville']))
 
-    def test_score_levenshtein(self):
-        # between similar title and series data
-        self.assertEqual(14, ranking.score_levenshtein('dogville 002',
-                                                       'dogville #2'))
-
-        # between very dissimilar title and series data
-        self.assertEqual(67, ranking.score_levenshtein('cat planet 12',
-                                                       'dogville #2'))
-
-        # more title than expected by series data
-        self.assertEqual(45, ranking.score_levenshtein(
-            'dogville #2 (scanned by cats)', 'dogville #2'))
-
-        # matches expected title
-        self.assertEqual(0, ranking.score_levenshtein('dogville #2',
-                                                      'dogville #2'))
-
 
 def mock_tokens_function(tokens):
     def get_title_tokens(title, strip_joiners=True, strip_subtitle=False):
@@ -193,7 +176,9 @@ def mock_date(year):
         return type('Date', (object,), {'year': year})
 
 
-def mock_metadata(series, series_index, publish_date=mock_date(2000),
+def mock_metadata(series,
+                  series_index,
+                  publish_date=mock_date(2000),
                   comments=''):
     return type('Metadata',
                 (object,),

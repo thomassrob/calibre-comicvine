@@ -71,7 +71,6 @@ def score_breakdown(metadata, title, title_tokens_function, authors):
         'publish_date': score_publish_date(title, metadata.pubdate),
         'title_tokens': score_title_tokens(metadata.series,
                                            input_title_tokens),
-        'levenshtein': score_levenshtein(input_title, issue_title),
         'title_length': score_title_length(input_title, issue_title),
         'issue_number': score_issue_number(input_issue_number,
                                            metadata.series_index),
@@ -107,20 +106,6 @@ def score_title_tokens(series, title_tokens):
         if token.lower() not in series.lower():
             score += 10
     return score
-
-
-def score_levenshtein(input_title, result_title):
-    """
-    Prefer similar titles using Levenshtein ratio (if module available)
-    for fuzzy title matching.
-    """
-    try:
-        import Levenshtein
-    except ImportError:
-        return 0
-
-    similarity = Levenshtein.ratio(unicode(result_title), unicode(input_title))
-    return 100 - int(100 * similarity)
 
 
 def score_title_length(input_title, result_title):
