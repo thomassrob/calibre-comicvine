@@ -86,10 +86,9 @@ def score_publish_date(input_title, publish_date):
     Additionally, penalize results without any publication date.
     """
     if publish_date:
-        match_year = re.compile(r'\((\d{4})\)')
-        year = match_year.search(input_title)
-        if year:
-            return abs(publish_date.year - int(year.group(1))) * 3
+        input_year = parser.get_year(input_title)
+        if input_year:
+            return abs(publish_date.year - int(input_year)) * 3
         else:
             return 0
     else:
