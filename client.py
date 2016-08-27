@@ -351,7 +351,11 @@ class Issue(object):
         self.name = comicvine_issue.name
         self.issue_number = comicvine_issue.issue_number
         self.description = comicvine_issue.description
-        self.author_names = [p.name for p in comicvine_issue.person_credits]
+
+        if comicvine_issue.person_credits:
+            self.author_names = [p.name for p in comicvine_issue.person_credits]
+        else:
+            self.author_names = []
 
         if comicvine_issue.volume:
             self.volume_id = comicvine_issue.volume.id
