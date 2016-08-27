@@ -21,6 +21,7 @@ class TestParser(unittest.TestCase):
         self.run_get_issue_number_test(
             '100 Bullets v02 - Split Second Chance (2001) (Zone-Empire)',
             None)
+        self.run_get_issue_number_test("'68 Bad Sign OS (2015)", None)
         self.run_get_issue_number_test('\xbd the man', None)
         self.run_get_issue_number_test('Superman 1\xbd', '1\xbd')
         self.run_get_issue_number_test('Superman 01\xbd', '1\xbd')
@@ -64,6 +65,7 @@ class TestParser(unittest.TestCase):
                                        'Alpha Flight Classic')
         self.run_get_title_tokens_test('Alpha Flight Classic v1 TPB (2000)',
                                        'Alpha Flight Classic')
+        self.run_get_title_tokens_test("'68 Bad Sign OS (2015)", "'68 Bad Sign")
 
     def run_get_title_tokens_test(self,
                                   input_title,

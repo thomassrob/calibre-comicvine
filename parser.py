@@ -25,12 +25,11 @@ def normalised_title(title, tokenizer=None):
         # "v2" or "vol2" or "v 2" or "vol 2" or "v02"
         (r'(?:v|vol)\s?\d+', ' '),
 
-        # "c2c" meaning cover to cover
-        (r'\s(c2c)\s', ' '),
-
-        # "TPB" meaning trade paperback
-        (r'\sTPB\s', ' '),
-        (r'\sTPB$', ' '),
+        # "c2c" = "cover to cover"
+        # "TPB" = "trade paperback"
+        # "OS" = "one-shot"
+        (r'\s(c2c|TPB|OS)\s', ' '),
+        (r'\s(c2c|TPB|OS)$', ' '),
 
         # parenthesized words
         (r'\([^)]+\)', ' '),
@@ -38,7 +37,8 @@ def normalised_title(title, tokenizer=None):
         # replace the issue number with "___123___",
         # ignoring issue numbers that are the first word
         # note: \xbd is the 1/2 character
-        (u'([^#\d\xbd]+)(?:[#\s])?0*([\d\xbd]+[^:\s]*):?[^\d]*$',
+        # ignore first-word numbers if they start with a single-quote character
+        (u'([^#\d\xbd\']+)(?:[#\s])?0*([\d\xbd]+[^:\s]*):?[^\d]*$',
          '\g<1>___\g<2>___'),
 
         # shrink whitespace to single spaces
