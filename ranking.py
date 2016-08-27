@@ -68,7 +68,7 @@ class IssueScorer(object):
             'title_tokens': self.score_title_tokens(),
             'title_length': self.score_title_length(),
             'issue_number': self.score_issue_number(),
-            'comments': self.score_comments(self.metadata.comments),
+            'comments': self.score_comments(),
         }
 
     def score_authors(self):
@@ -140,10 +140,11 @@ class IssueScorer(object):
         else:
             return 0
 
-    def score_comments(self, comments):
+    def score_comments(self):
         """
         De-preference collections.
         """
+        comments = self.metadata.comments
         if comments:
             collection = re.compile(r'(?:collect|contain)(?:s|ing) issues')
             if collection.search(comments.lower()):
@@ -151,8 +152,8 @@ class IssueScorer(object):
                 # "collecting issues", "containing issues", etc.
                 return 50
             if comments.find('Translates') != -1 and comments.count("\n") <= 1:
-                # single line comments with a sentence starting with "Translates"
-                # are usually translated compilations
+                # Single line comments with a sentence starting with
+                # "Translates" are usually translated compilations.
                 return 20
         return 0
 

@@ -126,92 +126,126 @@ class TestRanking(unittest.TestCase):
     def test_keygen_comments_indicating_translated_collection(self):
         scorer = IssueScorer(metadata=mock_metadata(series='Dogville',
                                                     series_index=2.0,
-                                                    comments='Translates issues #1-10'),
+                                                    comments='Translates #1-10'),
                              title='Dogville #2',
                              tokenizer=mock_tokens_function(
                                  ['dogville']))
         self.assertEqual(20, scorer.score())
 
+    def test_score_comments(self):
+        # generic comments
+        self.assertEqual(0, run_score_comments('the barkening continues'))
+
+        self.assertEqual(20, run_score_comments('Translates something'))
+        self.assertEqual(0, run_score_comments('translates something'))
+        self.assertEqual(20, run_score_comments('Translates something\n'))
+        self.assertEqual(0, run_score_comments('Translates something\n\n'))
+
+        self.assertEqual(50, run_score_comments('this collects issues #1-10'))
+        self.assertEqual(50, run_score_comments('Collects issues #1-10'))
+        self.assertEqual(50, run_score_comments('is collecting issues #1-10'))
+        self.assertEqual(50, run_score_comments('Collecting issues #1-10'))
+        self.assertEqual(0, run_score_comments('this collects #1-10'))
+        self.assertEqual(0, run_score_comments('Collects #1-10'))
+        self.assertEqual(0, run_score_comments('is collecting #1-10'))
+        self.assertEqual(0, run_score_comments('Collecting #1-10'))
+
+        self.assertEqual(50, run_score_comments('this contains issues #1-10'))
+        self.assertEqual(50, run_score_comments('Contains issues #1-10'))
+        self.assertEqual(50, run_score_comments('is containing issues #1-10'))
+        self.assertEqual(50, run_score_comments('Containing issues #1-10'))
+        self.assertEqual(0, run_score_comments('this contains #1-10'))
+        self.assertEqual(0, run_score_comments('Contains #1-10'))
+        self.assertEqual(0, run_score_comments('is containing #1-10'))
+        self.assertEqual(0, run_score_comments('Containing #1-10'))
+
     def test_score_publish_date(self):
         # missing publish date in metadata
-        self.assertEqual(10, self.run_score_publish_date('Dogville #2', None))
+        self.assertEqual(10, run_score_publish_date('Dogville #2', None))
         self.assertEqual(10,
-                         self.run_score_publish_date('Dogville #2 (2000)',
-                                                     None))
+                         run_score_publish_date('Dogville #2 (2000)', None))
 
         # no year in the title
-        self.assertEqual(0, self.run_score_publish_date('Dogville #2',
-                                                        mock_date(2000)))
+        self.assertEqual(0,
+                         run_score_publish_date('Dogville #2', mock_date(2000)))
 
         # mismatched data
-        self.assertEqual(48, self.run_score_publish_date('Dogville #2 (2000)',
-                                                         mock_date(1984)))
-        self.assertEqual(3, self.run_score_publish_date('Dogville #2 (2000)',
-                                                        mock_date(1999)))
-        self.assertEqual(3, self.run_score_publish_date('Dogville #2 (2000)',
-                                                        mock_date(2001)))
-        self.assertEqual(48, self.run_score_publish_date('Dogville #2 (2000)',
-                                                         mock_date(2016)))
+        self.assertEqual(48, run_score_publish_date('Dogville #2 (2000)',
+                                                    mock_date(1984)))
+        self.assertEqual(3, run_score_publish_date('Dogville #2 (2000)',
+                                                   mock_date(1999)))
+        self.assertEqual(3, run_score_publish_date('Dogville #2 (2000)',
+                                                   mock_date(2001)))
+        self.assertEqual(48, run_score_publish_date('Dogville #2 (2000)',
+                                                    mock_date(2016)))
 
         # matching year and publish date
-        self.assertEqual(0, self.run_score_publish_date('Dogville #2 (2000)',
-                                                        mock_date(2000)))
-
-    def run_score_publish_date(self, title, publish_date):
-        scorer = IssueScorer(metadata=mock_metadata(publish_date=publish_date),
-                             title=title)
-        return scorer.score_publish_date()
+        self.assertEqual(0, run_score_publish_date('Dogville #2 (2000)',
+                                                   mock_date(2000)))
 
     def test_score_issue_number(self):
-        self.assertEqual(50, self.run_score_issue_number('Spider-Man 001.1', 1))
+        self.assertEqual(50, run_score_issue_number('Spider-Man 001.1', 1))
         self.assertEqual(50,
-                         self.run_score_issue_number('Spider-Man 001.1', '1'))
+                         run_score_issue_number('Spider-Man 001.1', '1'))
         self.assertEqual(50,
-                         self.run_score_issue_number('Spider-Man 001.1', 1.0))
+                         run_score_issue_number('Spider-Man 001.1', 1.0))
         self.assertEqual(50,
-                         self.run_score_issue_number('Spider-Man 001.1', '1.0'))
+                         run_score_issue_number('Spider-Man 001.1', '1.0'))
         self.assertEqual(0,
-                         self.run_score_issue_number('Spider-Man 001.1', 1.1))
+                         run_score_issue_number('Spider-Man 001.1', 1.1))
         self.assertEqual(0,
-                         self.run_score_issue_number('Spider-Man 001.1', '1.1'))
+                         run_score_issue_number('Spider-Man 001.1', '1.1'))
         self.assertEqual(10,
-                         self.run_score_issue_number('Spider-Man', 1))
+                         run_score_issue_number('Spider-Man', 1))
         self.assertEqual(10,
-                         self.run_score_issue_number('Spider-Man', 1.1))
-
-    def run_score_issue_number(self, title, series_index):
-        scorer = IssueScorer(metadata=mock_metadata(series_index=series_index),
-                             title=title)
-        return scorer.score_issue_number()
+                         run_score_issue_number('Spider-Man', 1.1))
 
     def test_score_title_tokens(self):
         # no title tokens
-        self.assertEqual(0, self.run_score_title_tokens('Dogville', []))
+        self.assertEqual(0, run_score_title_tokens('Dogville', []))
 
         # more tokens expected than are present in title
         self.assertEqual(10,
-                         self.run_score_title_tokens('Dogville', ['awakening']))
+                         run_score_title_tokens('Dogville', ['awakening']))
         self.assertEqual(10,
-                         self.run_score_title_tokens('Dogville',
-                                                     ['dogville', 'awakening']))
+                         run_score_title_tokens('Dogville',
+                                                ['dogville', 'awakening']))
         self.assertEqual(30,
-                         self.run_score_title_tokens(
+                         run_score_title_tokens(
                              'Dogville',
                              ['dogville', 'awakening', 'by', 'cats']))
 
         # matching
         self.assertEqual(0,
-                         self.run_score_title_tokens('dogville', ['dogville']))
+                         run_score_title_tokens('dogville', ['dogville']))
         self.assertEqual(0,
-                         self.run_score_title_tokens('Dogville', ['dogville']))
-        self.assertEqual(0, self.run_score_title_tokens('  Dogville  ',
-                                                        ['dogville']))
+                         run_score_title_tokens('Dogville', ['dogville']))
+        self.assertEqual(0,
+                         run_score_title_tokens('  Dogville  ', ['dogville']))
 
-    def run_score_title_tokens(self, series, tokens):
-        scorer = IssueScorer(metadata=mock_metadata(series=series),
-                             title='',
-                             tokenizer=mock_tokens_function(tokens))
-        return scorer.score_title_tokens()
+
+def run_score_comments(comments):
+    scorer = IssueScorer(metadata=mock_metadata(comments=comments))
+    return scorer.score_comments()
+
+
+def run_score_issue_number(title, series_index):
+    scorer = IssueScorer(metadata=mock_metadata(series_index=series_index),
+                         title=title)
+    return scorer.score_issue_number()
+
+
+def run_score_publish_date(title, publish_date):
+    scorer = IssueScorer(metadata=mock_metadata(publish_date=publish_date),
+                         title=title)
+    return scorer.score_publish_date()
+
+
+def run_score_title_tokens(series, tokens):
+    scorer = IssueScorer(metadata=mock_metadata(series=series),
+                         title='',
+                         tokenizer=mock_tokens_function(tokens))
+    return scorer.score_title_tokens()
 
 
 def mock_tokens_function(tokens):
