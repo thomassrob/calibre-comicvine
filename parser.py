@@ -15,23 +15,25 @@ def normalised_title(title, tokenizer=None):
     provided after the issue number (e.g. a sub-title) will be
     ignored.
     """
-    title_tokens = []
-    issue_number = None
     replacements = (
         (r'((?:^|\s)(?:\w\.){2,})',
          lambda match: match.group(0).replace('.', '')),
 
         # eg "(of 3)" or "or 3"
-        (r'\s\(?of \d+\)?', ''),
+        (r'\s\(?of \d+\)?', ' '),
 
         # "v2" or "vol2" or "v 2" or "vol 2" or "v02"
-        (r'(?:v|vol)\s?\d+', ''),
+        (r'(?:v|vol)\s?\d+', ' '),
 
         # "c2c" meaning cover to cover
-        (r'\s(c2c)\s', ''),
+        (r'\s(c2c)\s', ' '),
+
+        # "TPB" meaning trade paperback
+        (r'\sTPB\s', ' '),
+        (r'\sTPB$', ' '),
 
         # parenthesized words
-        (r'\([^)]+\)', ''),
+        (r'\([^)]+\)', ' '),
 
         # replace the issue number with "___123___",
         # ignoring issue numbers that are the first word
@@ -42,17 +44,21 @@ def normalised_title(title, tokenizer=None):
         # shrink whitespace to single spaces
         (r'\s{2,}', ' '),
     )
+
     for pattern, replacement in replacements:
         title = re.sub(pattern, replacement, title)
+
+    issue_number = None
     issue_pattern = re.compile(r'___([^:\s]+)___')
     issue_match = issue_pattern.search(title)
     if issue_match:
         issue_number = issue_match.group(1)
         title = issue_pattern.sub('', title)
+
+    title_tokens = []
     if tokenizer is not None:
-        title = title.strip()
-        for token in tokenizer(title):
-            title_tokens.append(token.lower())
+        title_tokens = [token.lower() for token in tokenizer(title.strip())]
+
     return issue_number, title_tokens
 
 

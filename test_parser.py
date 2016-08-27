@@ -60,6 +60,10 @@ class TestParser(unittest.TestCase):
             '100 Bullets v02 - Split Second Chance (2001) (Zone-Empire)',
             '100 Bullets - Split Second Chance')
         self.run_get_title_tokens_test('\xbd the man', '\xbd the man')
+        self.run_get_title_tokens_test('Alpha Flight Classic v1 TPB',
+                                       'Alpha Flight Classic')
+        self.run_get_title_tokens_test('Alpha Flight Classic v1 TPB (2000)',
+                                       'Alpha Flight Classic')
 
     def run_get_title_tokens_test(self,
                                   input_title,
