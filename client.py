@@ -319,7 +319,17 @@ class PyComicvineWrapper(object):
         self.log.debug('Searching for volumes: %s' % query_string)
         comicvine_volumes = pycomicvine.Volumes.search(query=query_string,
                                                        field_list=VOLUME_FIELDS)
-        volumes = map_volumes(comicvine_volumes)
+        volumes = map_volumes(comicvine_volumes, PREFS['search_volume_limit'])
+
+        # extra query, heavily limited, in case the first query has zero results
+        if not volumes:
+            query_string = ' '.join(title_tokens)
+            self.log.debug(
+                'Searching for volumes without AND in query: %s' % query_string)
+            comicvine_volumes = pycomicvine.Volumes.search(query=query_string,
+                                                           field_list=VOLUME_FIELDS)
+            volumes = map_volumes(comicvine_volumes, 20)
+
         self.log.debug('%d volume ID matches found: %s' %
                        (len(volumes), [v.id for v in volumes]))
         return volumes
@@ -407,11 +417,11 @@ class Issue(object):
             return []
 
 
-def map_volumes(comicvine_volumes):
+def map_volumes(comicvine_volumes, limit):
     """
     Convert a list of Comicvine volumes.
     """
-    limit = min(PREFS['search_volume_limit'], len(comicvine_volumes))
+    limit = min(limit, len(comicvine_volumes))
     volumes = []
     if limit > 0:
         for pycomicvine_volume in comicvine_volumes[:limit]:
