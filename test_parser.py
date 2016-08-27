@@ -18,6 +18,15 @@ class TestParser(unittest.TestCase):
         self.run_get_issue_number_test(
             'Buffy Season 10 015 (2015) (Digital) (Cypher 2.0-Empire)', '15')
         self.run_get_issue_number_test('Jughead #210 (2016) (Jojo)', '210')
+        self.run_get_issue_number_test(
+            '100 Bullets v02 - Split Second Chance (2001) (Zone-Empire)',
+            None)
+        self.run_get_issue_number_test('\xbd the man', None)
+        self.run_get_issue_number_test('Superman 1\xbd', '1\xbd')
+        self.run_get_issue_number_test('Superman 01\xbd', '1\xbd')
+        self.run_get_issue_number_test('Superman #1\xbd', '1\xbd')
+        self.run_get_issue_number_test('Superman #01\xbd', '1\xbd')
+        self.run_get_issue_number_test('Superman # 01\xbd', '1\xbd')
 
     def run_get_issue_number_test(self,
                                   input_title,
@@ -47,6 +56,10 @@ class TestParser(unittest.TestCase):
         self.run_get_title_tokens_test(
             'Buffy Season 10 015 (of 4) (2015) (Digital) (Cypher 2.0-Empire)',
             'Buffy Season 10')
+        self.run_get_title_tokens_test(
+            '100 Bullets v02 - Split Second Chance (2001) (Zone-Empire)',
+            '100 Bullets - Split Second Chance')
+        self.run_get_title_tokens_test('\xbd the man', '\xbd the man')
 
     def run_get_title_tokens_test(self,
                                   input_title,

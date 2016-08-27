@@ -24,19 +24,27 @@ def normalised_title(title, title_tokens_function=None):
         # eg "(of 3)" or "or 3"
         (r'\s\(?of \d+\)?', ''),
 
-        # "v2" or "vol2" or "v 2" or "vol 2"
+        # "v2" or "vol2" or "v 2" or "vol 2" or "v02"
         (r'(?:v|vol)\s?\d+', ''),
 
         # "c2c" meaning cover to cover
         (r'\s(c2c)\s', ''),
 
+        # parenthesized words
         (r'\([^)]+\)', ''),
-        (u'(?:# ?)?0*([\d\xbd]+[^:\s]*):?[^\d]*$', '#\g<1>'),
+
+        # replace the issue number with "___123___",
+        # ignoring issue numbers that are the first word
+        # note: \xbd is the 1/2 character
+        (u'([^#\d\xbd]+)(?:[#\s])?0*([\d\xbd]+[^:\s]*):?[^\d]*$',
+         '\g<1>___\g<2>___'),
+
+        # shrink whitespace to single spaces
         (r'\s{2,}', ' '),
     )
     for pattern, replacement in replacements:
         title = re.sub(pattern, replacement, title)
-    issue_pattern = re.compile(r'#([^:\s]+)')
+    issue_pattern = re.compile(r'___([^:\s]+)___')
     issue_match = issue_pattern.search(title)
     if issue_match:
         issue_number = issue_match.group(1)
