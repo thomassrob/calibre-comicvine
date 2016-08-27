@@ -146,11 +146,17 @@ class IssueScorer(object):
         """
         comments = self.metadata.comments
         if comments:
-            collection = re.compile(r'(?:collect|contain)(?:s|ing) issues')
-            if collection.search(comments.lower()):
+            collecting_issues = re.compile(
+                r'(?:collect|contain)(?:s|ing) issues')
+            collecting = re.compile(r'(?:Collect|Contain)(?:s|ing)')
+
+            if collecting_issues.search(comments.lower()):
                 # Prefer single-issue results by looking for the phrases
                 # "collecting issues", "containing issues", etc.
                 return 50
+            elif collecting.search(comments):
+                # lower penalty for sentences starting with Collecting|Collects
+                return 10
             if comments.find('Translates') != -1 and comments.count("\n") <= 1:
                 # Single line comments with a sentence starting with
                 # "Translates" are usually translated compilations.

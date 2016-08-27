@@ -120,9 +120,6 @@ class TestRanking(unittest.TestCase):
                                  ['dogville']))
         self.assertEqual(50, scorer.score())
 
-    # TODO - add to regex for collection indicator
-    # low penalty for sentences starting with Collecting|Collects
-
     def test_keygen_comments_indicating_translated_collection(self):
         scorer = IssueScorer(metadata=mock_metadata(series='Dogville',
                                                     series_index=2.0,
@@ -146,18 +143,18 @@ class TestRanking(unittest.TestCase):
         self.assertEqual(50, run_score_comments('is collecting issues #1-10'))
         self.assertEqual(50, run_score_comments('Collecting issues #1-10'))
         self.assertEqual(0, run_score_comments('this collects #1-10'))
-        self.assertEqual(0, run_score_comments('Collects #1-10'))
+        self.assertEqual(10, run_score_comments('Collects #1-10'))
         self.assertEqual(0, run_score_comments('is collecting #1-10'))
-        self.assertEqual(0, run_score_comments('Collecting #1-10'))
+        self.assertEqual(10, run_score_comments('Collecting #1-10'))
 
         self.assertEqual(50, run_score_comments('this contains issues #1-10'))
         self.assertEqual(50, run_score_comments('Contains issues #1-10'))
         self.assertEqual(50, run_score_comments('is containing issues #1-10'))
         self.assertEqual(50, run_score_comments('Containing issues #1-10'))
         self.assertEqual(0, run_score_comments('this contains #1-10'))
-        self.assertEqual(0, run_score_comments('Contains #1-10'))
+        self.assertEqual(10, run_score_comments('Contains #1-10'))
         self.assertEqual(0, run_score_comments('is containing #1-10'))
-        self.assertEqual(0, run_score_comments('Containing #1-10'))
+        self.assertEqual(10, run_score_comments('Containing #1-10'))
 
     def test_score_publish_date(self):
         # missing publish date in metadata
