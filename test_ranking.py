@@ -2,173 +2,188 @@
 Unit tests for the ranking module.
 """
 import unittest
-import ranking
+
+from ranking import IssueScorer
 
 
 class TestRanking(unittest.TestCase):
     def test_keygen_no_title(self):
-        result = ranking.keygen(metadata=mock_metadata('Dogville', 2.0),
-                                title=None,
-                                title_tokens_function=mock_tokens_function([]))
-        self.assertEqual(0, result)
+        scorer = IssueScorer(metadata=mock_metadata('Dogville', 2.0),
+                             title=None,
+                             tokenizer=mock_tokens_function([]))
+        self.assertEqual(0, scorer.score())
 
     def test_keygen_matches_with_int_series_index(self):
-        result = ranking.keygen(metadata=mock_metadata('Dogville', 2),
-                                title='Dogville #2',
-                                title_tokens_function=mock_tokens_function(
-                                    ['dogville']))
-        self.assertEqual(0, result)
+        scorer = IssueScorer(metadata=mock_metadata('Dogville', 2),
+                             title='Dogville #2',
+                             tokenizer=mock_tokens_function(
+                                 ['dogville']))
+        self.assertEqual(0, scorer.score())
 
     def test_keygen_matches_with_float_series_index(self):
-        result = ranking.keygen(metadata=mock_metadata('Dogville', 2.0),
-                                title='Dogville #2',
-                                title_tokens_function=mock_tokens_function(
-                                    ['dogville']))
-        self.assertEqual(0, result)
+        scorer = IssueScorer(metadata=mock_metadata('Dogville', 2.0),
+                             title='Dogville #2',
+                             tokenizer=mock_tokens_function(
+                                 ['dogville']))
+        self.assertEqual(0, scorer.score())
 
     def test_keygen_float_series_index(self):
-        result = ranking.keygen(metadata=mock_metadata('Dogville', 2.1),
-                                title='Dogville #2.1',
-                                title_tokens_function=mock_tokens_function(
-                                    ['dogville']))
-        self.assertEqual(0, result)
+        scorer = IssueScorer(metadata=mock_metadata('Dogville', 2.1),
+                             title='Dogville #2.1',
+                             tokenizer=mock_tokens_function(
+                                 ['dogville']))
+        self.assertEqual(0, scorer.score())
 
     def test_keygen_series_index_mismatch_float_title(self):
-        result = ranking.keygen(metadata=mock_metadata('Dogville', 2.0),
-                                title='Dogville #2.1',
-                                title_tokens_function=mock_tokens_function(
-                                    ['dogville']))
-        self.assertEqual(53, result)
+        scorer = IssueScorer(metadata=mock_metadata('Dogville', 2.0),
+                             title='Dogville #2.1',
+                             tokenizer=mock_tokens_function(
+                                 ['dogville']))
+        self.assertEqual(53, scorer.score())
 
     def test_keygen_float_index_mismatch_int_title(self):
-        result = ranking.keygen(metadata=mock_metadata('Dogville', 2.1),
-                                title='Dogville #2',
-                                title_tokens_function=mock_tokens_function(
-                                    ['dogville']))
-        self.assertEqual(53, result)
+        scorer = IssueScorer(metadata=mock_metadata('Dogville', 2.1),
+                             title='Dogville #2',
+                             tokenizer=mock_tokens_function(
+                                 ['dogville']))
+        self.assertEqual(53, scorer.score())
 
     def test_keygen_with_matching_year(self):
-        result = ranking.keygen(
-            metadata=mock_metadata('Dogville', 2.0, mock_date(2010)),
-            title='Dogville #2 (2010)',
-            title_tokens_function=mock_tokens_function(['dogville']))
-        self.assertEqual(0, result)
+        scorer = IssueScorer(metadata=mock_metadata('Dogville', 2.0,
+                                                    mock_date(2010)),
+                             title='Dogville #2 (2010)',
+                             tokenizer=mock_tokens_function(
+                                 ['dogville']))
+        self.assertEqual(0, scorer.score())
 
     def test_keygen_with_mismatching_year(self):
-        result = ranking.keygen(
-            metadata=mock_metadata('Dogville', 2.0, mock_date(2010)),
-            title='Dogville #2 (2014)',
-            title_tokens_function=mock_tokens_function(['dogville']))
-        self.assertEqual(12, result)
+        scorer = IssueScorer(metadata=mock_metadata('Dogville', 2.0,
+                                                    mock_date(2010)),
+                             title='Dogville #2 (2014)',
+                             tokenizer=mock_tokens_function(
+                                 ['dogville']))
+        self.assertEqual(12, scorer.score())
 
     def test_keygen_with_missing_publish_date_and_year(self):
-        result = ranking.keygen(metadata=mock_metadata('Dogville', 2.0, None),
-                                title='Dogville #2',
-                                title_tokens_function=mock_tokens_function(
-                                    ['dogville']))
-        self.assertEqual(10, result)
+        scorer = IssueScorer(metadata=mock_metadata('Dogville', 2.0, None),
+                             title='Dogville #2',
+                             tokenizer=mock_tokens_function(
+                                 ['dogville']))
+        self.assertEqual(10, scorer.score())
 
     def test_keygen_with_missing_publish_date(self):
-        result = ranking.keygen(metadata=mock_metadata('Dogville', 2.0, None),
-                                title='Dogville #2 (2014)',
-                                title_tokens_function=mock_tokens_function(
-                                    ['dogville']))
-        self.assertEqual(10, result)
+        scorer = IssueScorer(metadata=mock_metadata('Dogville', 2.0, None),
+                             title='Dogville #2 (2014)',
+                             tokenizer=mock_tokens_function(
+                                 ['dogville']))
+        self.assertEqual(10, scorer.score())
 
     def test_keygen_with_extra_tokens(self):
-        result = ranking.keygen(metadata=mock_metadata('Dogville', 2.0),
-                                title='Dogville Awakening #2',
-                                title_tokens_function=mock_tokens_function(
-                                    ['dogville', 'awakening']))
-        self.assertEqual(21, result)
+        scorer = IssueScorer(metadata=mock_metadata('Dogville', 2.0),
+                             title='Dogville Awakening #2',
+                             tokenizer=mock_tokens_function(
+                                 ['dogville', 'awakening']))
+        self.assertEqual(21, scorer.score())
 
     def test_keygen_issue_number_does_not_match_series_index(self):
-        result = ranking.keygen(metadata=mock_metadata('Dogville', 2.0),
-                                title='Dogville #5',
-                                title_tokens_function=mock_tokens_function(
-                                    ['dogville']))
-        self.assertEqual(51, result)
+        scorer = IssueScorer(metadata=mock_metadata('Dogville', 2.0),
+                             title='Dogville #5',
+                             tokenizer=mock_tokens_function(
+                                 ['dogville']))
+        self.assertEqual(51, scorer.score())
 
     def test_keygen_series_index_not_in_title(self):
-        result = ranking.keygen(metadata=mock_metadata('Dogville', 2.0),
-                                title='Dogville',
-                                title_tokens_function=mock_tokens_function(
-                                    ['dogville']))
-        self.assertEqual(14, result)
+        scorer = IssueScorer(metadata=mock_metadata('Dogville', 2.0),
+                             title='Dogville',
+                             tokenizer=mock_tokens_function(
+                                 ['dogville']))
+        self.assertEqual(14, scorer.score())
 
     def test_keygen_generic_comments(self):
-        result = ranking.keygen(metadata=mock_metadata(series='Dogville',
-                                                       series_index=2.0,
-                                                       comments='the barkening continues'),
-                                title='Dogville #2',
-                                title_tokens_function=mock_tokens_function(
-                                    ['dogville']))
-        self.assertEqual(0, result)
+        scorer = IssueScorer(metadata=mock_metadata(series='Dogville',
+                                                    series_index=2.0,
+                                                    comments='the barkening continues'),
+                             title='Dogville #2',
+                             tokenizer=mock_tokens_function(
+                                 ['dogville']))
+        self.assertEqual(0, scorer.score())
 
     def test_keygen_comments_indicating_collection(self):
-        result = ranking.keygen(metadata=mock_metadata(series='Dogville',
-                                                       series_index=2.0,
-                                                       comments='this collects issues #1-10'),
-                                title='Dogville #2',
-                                title_tokens_function=mock_tokens_function(
-                                    ['dogville']))
-        self.assertEqual(50, result)
+        scorer = IssueScorer(metadata=mock_metadata(series='Dogville',
+                                                    series_index=2.0,
+                                                    comments='this collects issues #1-10'),
+                             title='Dogville #2',
+                             tokenizer=mock_tokens_function(
+                                 ['dogville']))
+        self.assertEqual(50, scorer.score())
 
     def test_keygen_comments_indicating_translated_collection(self):
-        result = ranking.keygen(metadata=mock_metadata(series='Dogville',
-                                                       series_index=2.0,
-                                                       comments='Translates issues #1-10'),
-                                title='Dogville #2',
-                                title_tokens_function=mock_tokens_function(
-                                    ['dogville']))
-        self.assertEqual(20, result)
+        scorer = IssueScorer(metadata=mock_metadata(series='Dogville',
+                                                    series_index=2.0,
+                                                    comments='Translates issues #1-10'),
+                             title='Dogville #2',
+                             tokenizer=mock_tokens_function(
+                                 ['dogville']))
+        self.assertEqual(20, scorer.score())
 
     def test_score_publish_date(self):
         # missing publish date in metadata
-        self.assertEqual(10, ranking.score_publish_date('Dogville #2', None))
+        self.assertEqual(10, self.run_score_publish_date('Dogville #2', None))
         self.assertEqual(10,
-                         ranking.score_publish_date('Dogville #2 (2000)', None))
+                         self.run_score_publish_date('Dogville #2 (2000)',
+                                                     None))
 
         # no year in the title
-        self.assertEqual(0, ranking.score_publish_date('Dogville #2',
-                                                       mock_date(2000)))
+        self.assertEqual(0, self.run_score_publish_date('Dogville #2',
+                                                        mock_date(2000)))
 
         # mismatched data
-        self.assertEqual(48, ranking.score_publish_date('Dogville #2 (2000)',
-                                                        mock_date(1984)))
-        self.assertEqual(3, ranking.score_publish_date('Dogville #2 (2000)',
-                                                       mock_date(1999)))
-        self.assertEqual(3, ranking.score_publish_date('Dogville #2 (2000)',
-                                                       mock_date(2001)))
-        self.assertEqual(48, ranking.score_publish_date('Dogville #2 (2000)',
-                                                        mock_date(2016)))
+        self.assertEqual(48, self.run_score_publish_date('Dogville #2 (2000)',
+                                                         mock_date(1984)))
+        self.assertEqual(3, self.run_score_publish_date('Dogville #2 (2000)',
+                                                        mock_date(1999)))
+        self.assertEqual(3, self.run_score_publish_date('Dogville #2 (2000)',
+                                                        mock_date(2001)))
+        self.assertEqual(48, self.run_score_publish_date('Dogville #2 (2000)',
+                                                         mock_date(2016)))
 
         # matching year and publish date
-        self.assertEqual(0, ranking.score_publish_date('Dogville #2 (2000)',
-                                                       mock_date(2000)))
+        self.assertEqual(0, self.run_score_publish_date('Dogville #2 (2000)',
+                                                        mock_date(2000)))
+
+    def run_score_publish_date(self, title, publish_date):
+        scorer = IssueScorer(metadata=mock_metadata(publish_date=publish_date),
+                             title=title)
+        return scorer.score_publish_date()
 
     def test_score_title_tokens(self):
         # no title tokens
-        self.assertEqual(0, ranking.score_title_tokens('Dogville', []))
+        self.assertEqual(0, self.run_score_title_tokens('Dogville', []))
 
         # more tokens expected than are present in title
         self.assertEqual(10,
-                         ranking.score_title_tokens('Dogville', ['awakening']))
+                         self.run_score_title_tokens('Dogville', ['awakening']))
         self.assertEqual(10,
-                         ranking.score_title_tokens('Dogville',
-                                                    ['dogville', 'awakening']))
+                         self.run_score_title_tokens('Dogville',
+                                                     ['dogville', 'awakening']))
         self.assertEqual(30,
-                         ranking.score_title_tokens(
+                         self.run_score_title_tokens(
                              'Dogville',
                              ['dogville', 'awakening', 'by', 'cats']))
 
         # matching
         self.assertEqual(0,
-                         ranking.score_title_tokens('dogville', ['dogville']))
+                         self.run_score_title_tokens('dogville', ['dogville']))
         self.assertEqual(0,
-                         ranking.score_title_tokens('Dogville', ['dogville']))
-        self.assertEqual(0, ranking.score_title_tokens('  Dogville  ',
-                                                       ['dogville']))
+                         self.run_score_title_tokens('Dogville', ['dogville']))
+        self.assertEqual(0, self.run_score_title_tokens('  Dogville  ',
+                                                        ['dogville']))
+
+    def run_score_title_tokens(self, series, tokens):
+        scorer = IssueScorer(metadata=mock_metadata(series=series),
+                             title='',
+                             tokenizer=mock_tokens_function(tokens))
+        return scorer.score_title_tokens()
 
 
 def mock_tokens_function(tokens):
@@ -185,8 +200,8 @@ def mock_date(year):
         return type('Date', (object,), {'year': year})
 
 
-def mock_metadata(series,
-                  series_index,
+def mock_metadata(series=None,
+                  series_index=None,
                   publish_date=mock_date(2000),
                   comments=''):
     return type('Metadata',
