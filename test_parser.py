@@ -52,8 +52,8 @@ class TestParser(unittest.TestCase):
                                   input_title,
                                   expected_sanitized_title):
         mock_tokens = ['mocked', 'tokens']
-        mock_function = mock_title_tokens_function(expected_sanitized_title,
-                                                   mock_tokens)
+        mock_function = mock_tokenizer(expected_sanitized_title,
+                                       mock_tokens)
         self.assertEqual(mock_tokens,
                          parser.get_title_tokens(input_title, mock_function))
 
@@ -89,7 +89,7 @@ class TestParser(unittest.TestCase):
         self.assertEqual('1232425', parser.rreplace('1232425', '2', ' ', 0))
 
 
-def mock_title_tokens_function(expected_title, title_tokens):
+def mock_tokenizer(expected_title, title_tokens):
     def get_title_tokens(title):
         if title != expected_title:
             raise AssertionError(
