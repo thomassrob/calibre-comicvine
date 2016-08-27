@@ -351,7 +351,7 @@ class Issue(object):
         self.name = comicvine_issue.name
         self.issue_number = comicvine_issue.issue_number
         self.description = comicvine_issue.description
-        self.authors = [p.name for p in comicvine_issue.person_credits]
+        self.author_names = [p.name for p in comicvine_issue.person_credits]
 
         if comicvine_issue.volume:
             self.volume_id = comicvine_issue.volume.id
@@ -385,6 +385,22 @@ class Issue(object):
         if self.name:
             title += ': %s' % self.name
         return title
+
+    def get_authors(self):
+        """
+        Get a list of authors, using the publisher's name if none are available.
+
+        TODO - find a way to get test_identify_plugin to work without
+        hacking the author field in this way.
+        """
+        if self.author_names:
+            return self.author_names
+        elif self.publisher_name:
+            # strip all spaces to trick Calibre into not treating this
+            # as a person's name
+            return [self.publisher_name.replace(' ', '')]
+        else:
+            return []
 
 
 def map_volumes(comicvine_volumes):

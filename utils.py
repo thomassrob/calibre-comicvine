@@ -11,7 +11,7 @@ def build_meta(log, issue_id):
     """Build metadata record based on comicvine issue_id."""
     issue = PyComicvineWrapper(log).lookup_issue(issue_id)
     if issue:
-        meta = Metadata(issue.get_full_title(), issue.authors)
+        meta = Metadata(issue.get_full_title(), issue.get_authors())
         meta.series = issue.volume_name
         meta.series_index = issue.issue_number
         meta.set_identifier('comicvine', str(issue.id))
