@@ -118,7 +118,7 @@ class TestRanking(unittest.TestCase):
                              title='Dogville #2',
                              tokenizer=mock_tokens_function(
                                  ['dogville']))
-        self.assertEqual(50, scorer.score())
+        self.assertEqual(20, scorer.score())
 
     def test_keygen_comments_indicating_translated_collection(self):
         scorer = IssueScorer(metadata=mock_metadata(series='Dogville',
@@ -127,34 +127,42 @@ class TestRanking(unittest.TestCase):
                              title='Dogville #2',
                              tokenizer=mock_tokens_function(
                                  ['dogville']))
-        self.assertEqual(20, scorer.score())
+        self.assertEqual(15, scorer.score())
 
     def test_score_comments(self):
         # generic comments
         self.assertEqual(0, run_score_comments('the barkening continues'))
 
-        self.assertEqual(20, run_score_comments('Translates something'))
+        self.assertEqual(15, run_score_comments('Translates something'))
         self.assertEqual(0, run_score_comments('translates something'))
-        self.assertEqual(20, run_score_comments('Translates something\n'))
+        self.assertEqual(15, run_score_comments('Translates something\n'))
         self.assertEqual(0, run_score_comments('Translates something\n\n'))
 
-        self.assertEqual(50, run_score_comments('this collects issues #1-10'))
-        self.assertEqual(50, run_score_comments('Collects issues #1-10'))
-        self.assertEqual(50, run_score_comments('is collecting issues #1-10'))
-        self.assertEqual(50, run_score_comments('Collecting issues #1-10'))
+        self.assertEqual(20, run_score_comments('this collects issues #1-10'))
+        self.assertEqual(20, run_score_comments('Collects issues #1-10'))
+        self.assertEqual(20, run_score_comments('is collecting issues #1-10'))
+        self.assertEqual(20, run_score_comments('Collecting issues #1-10'))
         self.assertEqual(0, run_score_comments('this collects #1-10'))
         self.assertEqual(10, run_score_comments('Collects #1-10'))
+        # TODO - ignore sentences with "Collects" which don't have numbers
+        # self.assertEqual(0, run_score_comments('Collects dog stories'))
         self.assertEqual(0, run_score_comments('is collecting #1-10'))
         self.assertEqual(10, run_score_comments('Collecting #1-10'))
+        # TODO - ignore sentences with "Collecting" which don't have numbers
+        # self.assertEqual(0, run_score_comments('Collecting dog stories'))
 
-        self.assertEqual(50, run_score_comments('this contains issues #1-10'))
-        self.assertEqual(50, run_score_comments('Contains issues #1-10'))
-        self.assertEqual(50, run_score_comments('is containing issues #1-10'))
-        self.assertEqual(50, run_score_comments('Containing issues #1-10'))
+        self.assertEqual(20, run_score_comments('this contains issues #1-10'))
+        self.assertEqual(20, run_score_comments('Contains issues #1-10'))
+        self.assertEqual(20, run_score_comments('is containing issues #1-10'))
+        self.assertEqual(20, run_score_comments('Containing issues #1-10'))
         self.assertEqual(0, run_score_comments('this contains #1-10'))
         self.assertEqual(10, run_score_comments('Contains #1-10'))
+        # TODO - ignore sentences with "Contains" which don't have numbers
+        # self.assertEqual(0, run_score_comments('Contains references to dogs'))
         self.assertEqual(0, run_score_comments('is containing #1-10'))
         self.assertEqual(10, run_score_comments('Containing #1-10'))
+        # TODO - ignore sentences with "Containing" which don't have numbers
+        # self.assertEqual(0, run_score_comments('Containing references to dogs'))
 
     def test_score_publish_date(self):
         # missing publish date in metadata

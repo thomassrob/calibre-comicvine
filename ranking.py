@@ -146,21 +146,21 @@ class IssueScorer(object):
         """
         comments = self.metadata.comments
         if comments:
-            collecting_issues = re.compile(
-                r'(?:collect|contain)(?:s|ing) issues')
-            collecting = re.compile(r'(?:Collect|Contain)(?:s|ing)')
+            lines = comments.split('\n')
 
-            if collecting_issues.search(comments.lower()):
+            if has_lines_with_pattern(lines,
+                                      r'(?:collect|contain)(?:s|ing) issues',
+                                      ignore_case=True):
                 # Prefer single-issue results by looking for the phrases
-                # "collecting issues", "containing issues", etc.
-                return 50
-            elif collecting.search(comments):
-                # lower penalty for sentences starting with Collecting|Collects
+                # "collecting issues", "collects issues", etc.
+                return 20
+            if has_lines_with_pattern(lines, r'(?:Collect|Contain)(?:s|ing)'):
+                # Penalize sentences starting with "Collecting", "Collects", etc.
                 return 10
             if comments.find('Translates') != -1 and comments.count("\n") <= 1:
                 # Single line comments with a sentence starting with
                 # "Translates" are usually translated compilations.
-                return 20
+                return 15
         return 0
 
     def get_sanitized_title(self):
@@ -177,3 +177,10 @@ class IssueScorer(object):
         Format a metadata's title as it will be saved if this is the best match.
         """
         return self.metadata.series.lower().strip()
+
+
+def has_lines_with_pattern(lines, pattern, ignore_case=False):
+    matcher = re.compile(pattern)
+    lines = [line.lower() if ignore_case else line for line in lines]
+    lines = [line for line in lines if matcher.search(line)]
+    return len(lines) > 0
