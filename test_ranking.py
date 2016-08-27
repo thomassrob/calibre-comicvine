@@ -39,14 +39,14 @@ class TestRanking(unittest.TestCase):
                              title='Dogville #2.1',
                              tokenizer=mock_tokens_function(
                                  ['dogville']))
-        self.assertEqual(53, scorer.score())
+        self.assertEqual(50, scorer.score())
 
     def test_keygen_float_index_mismatch_int_title(self):
         scorer = IssueScorer(metadata=mock_metadata('Dogville', 2.1),
                              title='Dogville #2',
                              tokenizer=mock_tokens_function(
                                  ['dogville']))
-        self.assertEqual(53, scorer.score())
+        self.assertEqual(50, scorer.score())
 
     def test_keygen_with_matching_year(self):
         scorer = IssueScorer(metadata=mock_metadata('Dogville', 2.0,
@@ -90,14 +90,17 @@ class TestRanking(unittest.TestCase):
                              title='Dogville #5',
                              tokenizer=mock_tokens_function(
                                  ['dogville']))
-        self.assertEqual(51, scorer.score())
+        self.assertEqual(50, scorer.score())
 
     def test_keygen_series_index_not_in_title(self):
         scorer = IssueScorer(metadata=mock_metadata('Dogville', 2.0),
                              title='Dogville',
                              tokenizer=mock_tokens_function(
                                  ['dogville']))
-        self.assertEqual(14, scorer.score())
+        self.assertEqual(10, scorer.score())
+
+    # TODO - title has no number, but series does:
+    # penalize results that are not series_index=1
 
     def test_keygen_generic_comments(self):
         scorer = IssueScorer(metadata=mock_metadata(series='Dogville',
@@ -116,6 +119,9 @@ class TestRanking(unittest.TestCase):
                              tokenizer=mock_tokens_function(
                                  ['dogville']))
         self.assertEqual(50, scorer.score())
+
+    # TODO - add to regex for collection indicator
+    # low penalty for sentences starting with Collecting|Collects
 
     def test_keygen_comments_indicating_translated_collection(self):
         scorer = IssueScorer(metadata=mock_metadata(series='Dogville',
@@ -155,6 +161,28 @@ class TestRanking(unittest.TestCase):
         scorer = IssueScorer(metadata=mock_metadata(publish_date=publish_date),
                              title=title)
         return scorer.score_publish_date()
+
+    def test_score_issue_number(self):
+        self.assertEqual(50, self.run_score_issue_number('Spider-Man 001.1', 1))
+        self.assertEqual(50,
+                         self.run_score_issue_number('Spider-Man 001.1', '1'))
+        self.assertEqual(50,
+                         self.run_score_issue_number('Spider-Man 001.1', 1.0))
+        self.assertEqual(50,
+                         self.run_score_issue_number('Spider-Man 001.1', '1.0'))
+        self.assertEqual(0,
+                         self.run_score_issue_number('Spider-Man 001.1', 1.1))
+        self.assertEqual(0,
+                         self.run_score_issue_number('Spider-Man 001.1', '1.1'))
+        self.assertEqual(10,
+                         self.run_score_issue_number('Spider-Man', 1))
+        self.assertEqual(10,
+                         self.run_score_issue_number('Spider-Man', 1.1))
+
+    def run_score_issue_number(self, title, series_index):
+        scorer = IssueScorer(metadata=mock_metadata(series_index=series_index),
+                             title=title)
+        return scorer.score_issue_number()
 
     def test_score_title_tokens(self):
         # no title tokens

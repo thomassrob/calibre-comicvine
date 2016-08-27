@@ -115,12 +115,14 @@ class IssueScorer(object):
         """
         Prefer input titles which more closely match the canonical title
         """
-        input_title = self.sanitize_title()
-        result_title = self.format_issue_title()
+        title_tokens = parser.get_title_tokens(self.title, self.tokenizer)
+        input_title = ' '.join(title_tokens).lower().strip()
 
-        match = 0 if input_title == result_title else 1
+        result_title = self.metadata.series.lower().strip()
 
-        return match + abs(len(input_title) - len(result_title))
+        mismatch_score = 0 if input_title == result_title else 1
+
+        return mismatch_score + abs(len(input_title) - len(result_title))
 
     def score_issue_number(self):
         """
@@ -154,34 +156,17 @@ class IssueScorer(object):
                 return 20
         return 0
 
-    def sanitize_title(self):
+    def get_sanitized_title(self):
         """
         Given the title from the initial input, strip the date out of it,
         lower-case it, and strip off any leading/trailing whitespace.
         """
         title_tokens = parser.get_title_tokens(self.title, self.tokenizer)
-        issue_number = parser.get_issue_number(self.title)
 
-        return (
-            '%s #%s' % (' '.join(title_tokens), issue_number)).lower().strip()
+        return ' '.join(title_tokens).lower().strip()
 
-    def format_issue_title(self):
+    def get_sanitized_series(self):
         """
         Format a metadata's title as it will be saved if this is the best match.
         """
-        issue_number = self.format_issue_number()
-        return ('%s #%s' % (self.metadata.series, issue_number)).lower().strip()
-
-    def format_issue_number(self):
-        """
-        Format a metadata's issue number as it will be saved
-        if this is the best match.
-
-        In particular, this formats 1.0 as "1" and 1.2 as "1.2",
-        for issues which have non-integer issue numbers.
-        """
-        series_index = self.metadata.series_index
-        if int(series_index) == float(series_index):
-            return '%d' % series_index
-        else:
-            return ('%f' % series_index).rstrip('0')
+        return self.metadata.series.lower().strip()
