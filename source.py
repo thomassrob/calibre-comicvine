@@ -87,16 +87,8 @@ class Comicvine(Source):
             return option_parser
 
         opts, args = option_parser().parse_args(args)
-        if opts.verbose:
-            calibre_logging.default_log = calibre_logging.Log(
-                level=calibre_logging.DEBUG)
-            level = 'DEBUG'
-        else:
-            level = 'INFO'
-        setup_cli_handlers(logging.getLogger('comicvine'),
-                           getattr(logging, level))
-        log = calibre_logging.ThreadSafeLog(
-            level=getattr(calibre_logging, level))
+
+        log = init_cli_logging(opts.verbose)
 
         title = None
         authors = []
@@ -220,6 +212,16 @@ class Comicvine(Source):
                     result_queue.put((self, cdata))
                 except:
                     log.exception('Failed to download cover from:', url)
+
+
+def init_cli_logging(is_verbose=True):
+    if is_verbose:
+        calibre_logging.default_log = \
+            calibre_logging.Log(level=calibre_logging.DEBUG)
+
+    level = 'DEBUG' if is_verbose else 'INFO'
+    setup_cli_handlers(logging.getLogger('comicvine'), getattr(logging, level))
+    return calibre_logging.ThreadSafeLog(level=getattr(calibre_logging, level))
 
 
 def test_fields(self, metadata):
