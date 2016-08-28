@@ -7,12 +7,12 @@ from calibre.utils.config import JSONConfig
 PREFS = JSONConfig('plugins/comicvine')
 PREFS.defaults['api_key'] = ''
 PREFS.defaults['worker_threads'] = 16
-PREFS.defaults['request_interval'] = 5
+PREFS.defaults['request_interval'] = 2
 PREFS.defaults['request_batch_size'] = 16
-PREFS.defaults['retries'] = 2
+PREFS.defaults['retries'] = 3
 PREFS.defaults['send_logs_to_print'] = True
-PREFS.defaults['search_volume_limit'] = 300
-PREFS.defaults['issue_search_page_size'] = 100
+PREFS.defaults['search_volume_limit'] = 100
+PREFS.defaults['issue_search_page_size'] = 50
 PREFS.defaults['cache_hours'] = 12
 
 
