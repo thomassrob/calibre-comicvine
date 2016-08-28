@@ -38,26 +38,3 @@ def find_issue_ids(candidate_volume_ids, issue_number, log):
     """Find issue IDs in candidate volumes that match the issue_number."""
     return PyComicvineWrapper(log).search_for_issue_ids(candidate_volume_ids,
                                                         issue_number)
-
-
-def find_author_issue_ids(query, authors, log):
-    """
-    Find the union of issue IDs for all people that match the first
-    author provided.
-
-    Possible return values:
-    None if there were no valid authors provided.
-    Empty set if no issues exist for any matching authors,
-    or if no authors matched the input.
-    Set of issue IDs for all authors matching the first author string.
-    """
-    if authors and authors != ['Unknown']:
-        author_tokens = query.get_author_tokens(authors[:1])
-        client = PyComicvineWrapper(log)
-        candidate_authors = client.search_for_authors(author_tokens)
-        issue_ids = set()
-        for author in candidate_authors:
-            issue_ids.update(set([issue.id for issue in author.issues]))
-        return issue_ids
-    else:
-        return None

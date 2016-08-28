@@ -176,11 +176,6 @@ class Comicvine(Source):
                                              issue_number,
                                              log)
 
-            # Refine issue selection based on authors
-            author_issue_ids = utils.find_author_issue_ids(self, authors, log)
-            if author_issue_ids is not None:
-                issue_ids = author_issue_ids.intersection(issue_ids)
-
             # Queue candidates
             pool = ThreadPool(PREFS.get('worker_threads'))
             shutdown = threading.Event()

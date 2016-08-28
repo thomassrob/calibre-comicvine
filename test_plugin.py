@@ -38,50 +38,6 @@ class TestFailingFileList(unittest.TestCase):
 
 
 class TestPlugin(unittest.TestCase):
-    def test_title_and_single_author_match(self):
-        test_identify_plugin(Comicvine.name, [(
-            {
-                'title': 'Preacher Special: The Story of You-Know-Who',
-                'authors': ['Garth Ennis'],
-            },
-            [
-                title_test(
-                    'Preacher Special: The Story of You-Know-Who #1: '
-                    'The Story of You-Know-Who',
-                    exact=True
-                ),
-                authors_test(
-                    ['Garth Ennis', 'Richard Case', 'Matt Hollingsworth',
-                     'Clem Robins', 'Glenn Fabry', 'Julie Rottenberg']),
-                series_test('Preacher Special: The Story of You-Know-Who',
-                            1.0),
-                comicvine_id_test('105747'),
-                comicvine_volume_id_test('18059'),
-            ]
-        )])
-
-    def test_title_and_multiple_partial_author_matches(self):
-        test_identify_plugin(Comicvine.name, [(
-            {
-                'title': 'Preacher Special: The Story of You-Know-Who',
-                'authors': ['Ennis', 'Fabry'],
-            },
-            [
-                title_test(
-                    'Preacher Special: The Story of You-Know-Who #1: '
-                    'The Story of You-Know-Who',
-                    exact=True
-                ),
-                authors_test(
-                    ['Garth Ennis', 'Richard Case', 'Matt Hollingsworth',
-                     'Clem Robins', 'Glenn Fabry', 'Julie Rottenberg']),
-                series_test('Preacher Special: The Story of You-Know-Who',
-                            1.0),
-                comicvine_id_test('105747'),
-                comicvine_volume_id_test('18059'),
-            ]
-        )])
-
     def test_comicvine_id_match(self):
         test_identify_plugin(Comicvine.name, [(
             {

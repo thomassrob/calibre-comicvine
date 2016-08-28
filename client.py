@@ -286,21 +286,6 @@ class PyComicvineWrapper(object):
             self.log.warning("Failed to find issue: %d" % issue_id)
             return None
 
-    @retry_on_comicvine_error()
-    def search_for_authors(self, author_tokens):
-        """Find people that match the author tokens."""
-        if author_tokens and author_tokens != ['Unknown']:
-            filters = ['name:%s' % author_token
-                       for author_token in author_tokens]
-            filter_string = ','.join(filters)
-            self.log.debug("Searching for author: %s" % filter_string)
-            authors = pycomicvine.People(filter=filter_string,
-                                         field_list=['id'])
-            self.log.debug("%d matches found" % len(authors))
-            return authors
-        else:
-            return []
-
     @cache_comicvine('search_for_issue_ids')
     @retry_on_comicvine_error()
     def search_for_issue_ids(self, volume_ids, issue_number):
