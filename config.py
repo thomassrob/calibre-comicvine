@@ -13,6 +13,7 @@ PREFS.defaults['retries'] = 2
 PREFS.defaults['send_logs_to_print'] = True
 PREFS.defaults['search_volume_limit'] = 300
 PREFS.defaults['issue_search_page_size'] = 100
+PREFS.defaults['cache_hours'] = 12
 
 
 class ConfigWidget(QWidget):

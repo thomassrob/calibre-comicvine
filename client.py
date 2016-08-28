@@ -166,18 +166,18 @@ def retry_on_comicvine_error():
     return wrap_function
 
 
-def cache_comicvine(cache_name):
+def cache_comicvine(name, **kwargs):
     """
     Decorator for instance methods on the comicvine wrapper.
     """
 
-    def wrap_function(target_function):
-        """Wrap the target function."""
-        temp_directory = os.getenv('TMPDIR')
+    cache_path = get_cache_path(name, hours=PREFS['cache_hours'], **kwargs)
 
-        if temp_directory is not None:
-            path = '%s/calibre-comicvine/%s' % (temp_directory, cache_name)
-            cache_it = pyfscache.FSCache(path, hours=12)
+    if cache_path is not None:
+        def wrap_function(target_function):
+            """Wrap the target function."""
+
+            cache_it = pyfscache.FSCache(cache_path, hours=PREFS['cache_hours'])
 
             def instance_function(*args, **kwargs):
                 """
@@ -194,10 +194,31 @@ def cache_comicvine(cache_name):
                 return cached_function(*args[1:], **kwargs)
 
             return instance_function
-        else:
+
+        return wrap_function
+    else:
+        def wrap_function(target_function):
+            """Trivially wrap the target function."""
             return target_function
 
-    return wrap_function
+        return wrap_function
+
+
+def get_cache_path(name, hours, **kwargs):
+    """
+    Get the file path to the cache for the cache name and args.
+    """
+    temp_directory = os.getenv('TMPDIR')
+
+    if temp_directory is not None:
+        name += '-hours-%s' % hours
+
+        if kwargs:
+            named_args = ['%s-%s' % (k, kwargs[k]) for k in sorted(kwargs)]
+            name = '%s-%s' % (name, '-'.join(named_args))
+        return '%s/calibre-comicvine/%s' % (temp_directory, name)
+    else:
+        return None
 
 
 ISSUE_FIELDS = ['id',
@@ -311,7 +332,7 @@ class PyComicvineWrapper(object):
                        (len(all_issue_ids), all_issue_ids))
         return all_issue_ids
 
-    @cache_comicvine('search_for_volumes')
+    @cache_comicvine('search_for_volumes', limit=PREFS['search_volume_limit'])
     @retry_on_comicvine_error()
     def search_for_volumes(self, title_tokens):
         """Search for IDs of all volumes which match the given title tokens."""
