@@ -231,7 +231,10 @@ ISSUE_FIELDS = ['id',
                 'cover_date',
                 'image']
 
-VOLUME_FIELDS = ['id', 'name', 'start_year', 'publisher']
+VOLUME_FIELDS = ['id',
+                 'name',
+                 'start_year',
+                 'publisher']
 
 
 class PyComicvineWrapper(object):
