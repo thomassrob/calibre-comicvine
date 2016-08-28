@@ -66,20 +66,17 @@ class TokenBucket(object):
 _token_bucket = TokenBucket()
 
 
-def retry_on_comicvine_error():
+def retry_on_comicvine_error(max_attempts):
     """
     Decorator for functions that access the comicvine api.
 
     Retries the decorated function on error.
     """
-    pycomicvine.api_key = PREFS['api_key']
 
     def wrap_function(target_function):
         """
         Closure for the retry function, giving access to decorator arguments.
         """
-
-        max_attempts = PREFS['retries']
 
         def can_retry(attempt):
             """
@@ -105,8 +102,7 @@ def retry_on_comicvine_error():
 
             def log_rate_limit_error(error_to_log):
                 """
-                Log a warning about exceeding rate limit and re-raise
-                the error.
+                Log a warning about exceeding the rate limit.
                 """
                 logging.warning('API Rate limit exceeded %s',
                                 error_to_log)
@@ -114,8 +110,6 @@ def retry_on_comicvine_error():
             def log_error(error_to_log, current_attempt):
                 """
                 Log a warning about failing the call to pycomicvine.
-                If we haven't exceeded the retry limit, return True to
-                indicate we still want to continue.
                 """
                 logging.warning(
                     'Calling %r failed on attempt %d/%d - '
@@ -246,14 +240,19 @@ class PyComicvineWrapper(object):
 
     def __init__(self, log):
         self.log = log
+        self.max_attempts = PREFS['retries']
+        pycomicvine.api_key = PREFS['api_key']
 
     @cache_comicvine('lookup_volume')
-    @retry_on_comicvine_error()
     def lookup_volume(self, volume_id):
         """Ensure the volume ID passed in matches a real volume."""
         self.log.debug('Looking up volume: %d' % volume_id)
-        pycomicvine_volume = pycomicvine.Volume(id=volume_id,
-                                                field_list=VOLUME_FIELDS)
+
+        @retry_on_comicvine_error(max_attempts=self.max_attempts)
+        def run_query():
+            return pycomicvine.Volume(id=volume_id, field_list=VOLUME_FIELDS)
+
+        pycomicvine_volume = run_query()
 
         if pycomicvine_volume:
             self.log.debug("Found volume: %d" % volume_id)
@@ -263,7 +262,6 @@ class PyComicvineWrapper(object):
             return None
 
     @cache_comicvine('lookup_issue')
-    @retry_on_comicvine_error()
     def lookup_issue(self, issue_id):
         """Fetch the metadata we need, given an issue ID."""
         self.log.debug('Looking up issue: %d' % issue_id)
@@ -273,7 +271,12 @@ class PyComicvineWrapper(object):
         # isn't actually compatible between those two APIs
         clear_pycomicvine_issue_cache(issue_id)
 
-        issue = pycomicvine.Issue(id=issue_id, field_list=ISSUE_FIELDS)
+        @retry_on_comicvine_error(max_attempts=self.max_attempts)
+        def run_query():
+            return pycomicvine.Issue(id=issue_id, field_list=ISSUE_FIELDS)
+
+        issue = run_query()
+
         if issue and issue.volume:
             self.log.debug('Found issue: %d %s #%s' %
                            (issue_id, issue.volume.name, issue.issue_number))
@@ -287,7 +290,6 @@ class PyComicvineWrapper(object):
             return None
 
     @cache_comicvine('search_for_issue_ids')
-    @retry_on_comicvine_error()
     def search_for_issue_ids(self, volume_ids, issue_number):
         """Search for all issue IDs which match the given filters."""
 
@@ -308,7 +310,14 @@ class PyComicvineWrapper(object):
 
             filter_string = ','.join(filters)
             self.log.debug('Searching for issues: %s' % filter_string)
-            issues = pycomicvine.Issues(filter=filter_string, field_list=['id'])
+
+            @retry_on_comicvine_error(max_attempts=self.max_attempts)
+            def run_query():
+                return pycomicvine.Issues(filter=filter_string,
+                                          field_list=['id'])
+
+            issues = run_query()
+
             # it is possible for pycomicvine to return iterables containing None
             issues = [a for a in issues if a is not None]
             paged_issue_ids = [issue.id for issue in issues]
@@ -321,13 +330,17 @@ class PyComicvineWrapper(object):
         return all_issue_ids
 
     @cache_comicvine('search_for_volumes', limit=PREFS['search_volume_limit'])
-    @retry_on_comicvine_error()
     def search_for_volumes(self, title_tokens):
         """Search for IDs of all volumes which match the given title tokens."""
         query_string = ' AND '.join(title_tokens)
         self.log.debug('Searching for volumes: %s' % query_string)
-        comicvine_volumes = pycomicvine.Volumes.search(query=query_string,
-                                                       field_list=VOLUME_FIELDS)
+
+        @retry_on_comicvine_error(max_attempts=self.max_attempts)
+        def run_query():
+            return pycomicvine.Volumes.search(query=query_string,
+                                              field_list=VOLUME_FIELDS)
+
+        comicvine_volumes = run_query()
         volumes = map_volumes(comicvine_volumes, PREFS['search_volume_limit'])
 
         # extra query, heavily limited, in case the first query has zero results
@@ -335,8 +348,13 @@ class PyComicvineWrapper(object):
             query_string = ' '.join(title_tokens)
             self.log.debug(
                 'Searching for volumes without AND in query: %s' % query_string)
-            comicvine_volumes = pycomicvine.Volumes.search(query=query_string,
-                                                           field_list=VOLUME_FIELDS)
+
+            @retry_on_comicvine_error(max_attempts=self.max_attempts)
+            def run_secondary_query():
+                return pycomicvine.Volumes.search(query=query_string,
+                                                  field_list=VOLUME_FIELDS)
+
+            comicvine_volumes = run_secondary_query()
             volumes = map_volumes(comicvine_volumes, 20)
 
         self.log.debug('%d volume ID matches found: %s' %
