@@ -240,7 +240,10 @@ class PyComicvineWrapper(object):
 
     def __init__(self, log):
         self.log = log
+        self.cache_hours = PREFS['cache_hours']
         self.max_attempts = PREFS['retries']
+        self.issue_search_page_size = PREFS['issue_search_page_size']
+        self.search_volume_limit = PREFS['search_volume_limit']
         pycomicvine.api_key = PREFS['api_key']
 
     @cache_comicvine('lookup_volume')
@@ -293,11 +296,10 @@ class PyComicvineWrapper(object):
     def search_for_issue_ids(self, volume_ids, issue_number):
         """Search for all issue IDs which match the given filters."""
 
-        page_size = PREFS['issue_search_page_size']
+        page_size = self.issue_search_page_size
 
         volume_id_pages = [volume_ids[i:i + page_size]
-                           for i
-                           in range(0, len(volume_ids), page_size)]
+                           for i in range(0, len(volume_ids), page_size)]
 
         all_issue_ids = []
 
@@ -341,7 +343,7 @@ class PyComicvineWrapper(object):
                                               field_list=VOLUME_FIELDS)
 
         comicvine_volumes = run_query()
-        volumes = map_volumes(comicvine_volumes, PREFS['search_volume_limit'])
+        volumes = map_volumes(comicvine_volumes, self.search_volume_limit)
 
         # extra query, heavily limited, in case the first query has zero results
         if not volumes:
