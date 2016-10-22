@@ -453,7 +453,10 @@ def map_volumes(comicvine_volumes, limit):
     limit = min(limit, len(comicvine_volumes))
     volumes = []
     if limit > 0:
-        for pycomicvine_volume in comicvine_volumes[:limit]:
+        # using a sub-optimal loop of indices rather than through
+        # comicvine_volumes[:limit] because pycomicvine has a bug in it
+        for index in range(limit):
+            pycomicvine_volume = comicvine_volumes[index]
             # it is possible for pycomicvine to return iterables containing None
             if pycomicvine_volume is not None:
                 volumes.append(Volume(pycomicvine_volume))
