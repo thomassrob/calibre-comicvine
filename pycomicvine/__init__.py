@@ -32,7 +32,8 @@ import dateutil.parser
 from . import error
 import collections
 
-_API_URL = "https://www.comicvine.com/api/"
+#_API_URL = "https://www.comicvine.com/api/"
+_API_URL = "https://comicvine.gamespot.com/api/"
 
 _cached_resources = {}
 _api_hooks = {}
