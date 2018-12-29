@@ -1,24 +1,50 @@
-'''
+"""
 calibre_plugins.comicvine - A calibre metadata source for comicvine
-'''
-from calibre_plugins.comicvine.source import Comicvine
+"""
+
+# import required for calibre-customize to install plugin
+from source import Comicvine
 
 if __name__ == '__main__':
-  from calibre.ebooks.metadata.sources.test import (test_identify_plugin,
-                                                    title_test, authors_test,
-                                                    series_test)
-  test_identify_plugin(Comicvine.name, [
-      (
-        {
-          'title': 'Preacher Special: The Story of You-Know-Who',
-          'authors': 'Garth Ennis' 
-          },
-        [
-          title_test('Preacher Special: The Story of You-Know-Who', 
-                     exact=False),
-          authors_test(['Garth Ennis', 'Richard Case', 'Matt Hollingsworth',
-                        'Clem Robins', 'Glenn Fabry', 'Julie Rottenberg']),
-         ]
-      ), 
-    ]
-)
+    import unittest
+
+    # unit tests
+    import test_parser
+    import test_ranking
+
+    # integration tests
+    import test_plugin
+
+
+    def get_unit_suites():
+        test_loader = unittest.TestLoader()
+        return [test_loader.loadTestsFromModule(test_parser),
+                test_loader.loadTestsFromModule(test_ranking)]
+
+
+    def get_integration_suites():
+        test_loader = unittest.TestLoader()
+        return [test_loader.loadTestsFromTestCase(test_plugin.TestFileList),
+                test_loader.loadTestsFromTestCase(test_plugin.TestPlugin)]
+
+
+    def get_known_failing_integration_suites():
+        test_loader = unittest.TestLoader()
+        return [
+            test_loader.loadTestsFromTestCase(test_plugin.TestFailingFileList)]
+
+
+    def run_tests():
+        test_runner = unittest.TextTestRunner()
+
+        for test_suite in get_unit_suites():
+            test_runner.run(test_suite)
+
+        for test_suite in get_integration_suites():
+            test_runner.run(test_suite)
+
+        # for test_suite in get_known_failing_integration_suites():
+        #     test_runner.run(test_suite)
+
+
+    run_tests()

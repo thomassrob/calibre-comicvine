@@ -36,7 +36,6 @@ import collections
 _API_URL = "https://comicvine.gamespot.com/api/"
 
 _cached_resources = {}
-_api_hooks = {}
 
 api_key = ""
 
@@ -46,17 +45,6 @@ def str_to_datetime(value):
     except ValueError:
         return value
 
-def hook_register(hook_name, callback):
-    if callable(callback):
-        _api_hooks[hook_name] = callback
-    else:
-        raise error.IllegalArquementException(
-            "Hook callbacks must be callable"
-        )
-
-def hook_run(hook_name, *args, **kwargs):
-    if callable(_api_hooks.get(hook_name)):
-        _api_hooks[hook_name](*args, **kwargs)
 
 class AttributeDefinition(object):
     def __init__(self, target, start_type = None):
@@ -187,7 +175,6 @@ class _Resource(object):
         params['format'] = 'json'
         params = urlencode(params)
         url = baseurl+"?"+params
-        hook_run('pre_request_hook')
         logging.getLogger(__name__).debug("Calling "+url)
         if timeout == None:
             response_raw = json.loads(urllib2.urlopen(url).read())
@@ -590,11 +577,44 @@ class Concept(_SingularResource):
 class Concepts(_SortableListResource):
     pass
 
+class Episode(_SingularResource):
+    aliases = AttributeDefinition('keep')
+    api_detail_url = AttributeDefinition('keep')
+    character_credits = AttributeDefinition('Characters')
+    characters_died_in = AttributeDefinition('Characters')
+    concept_credits = AttributeDefinition('Concepts')
+    air_date = AttributeDefinition(datetime.datetime)
+    date_added = AttributeDefinition(datetime.datetime)
+    date_last_updated = AttributeDefinition(datetime.datetime)
+    deck = AttributeDefinition('keep')
+    description = AttributeDefinition('keep')
+    first_appearance_characters = AttributeDefinition('Characters')
+    first_appearance_concepts = AttributeDefinition('Concepts')
+    first_appearance_locations = AttributeDefinition('Locations')
+    first_appearance_objects = AttributeDefinition('Objects')
+    first_appearance_storyarcs = AttributeDefinition('StoryArcs')
+    first_appearance_teams = AttributeDefinition('Teams')
+    has_staff_review = AttributeDefinition('keep')
+    id = AttributeDefinition('keep')
+    image = AttributeDefinition('keep')
+    episode_number = AttributeDefinition('keep')
+    location_credits = AttributeDefinition('Locations')
+    name = AttributeDefinition('keep')
+    object_credits = AttributeDefinition('Objects')
+    person_credits = AttributeDefinition('People')
+    site_detail_url = AttributeDefinition('keep')
+    story_arc_credits = AttributeDefinition('StoryArcs')
+    team_credits = AttributeDefinition('team_credits')
+    series = AttributeDefinition('Series')
+
+class Episodes(_SortableListResource):
+    pass
+
 class Issue(_SingularResource):
     aliases = AttributeDefinition('keep')
     api_detail_url = AttributeDefinition('keep')
     character_credits = AttributeDefinition('Characters')
-    character_died_in = AttributeDefinition('Characters')
+    characters_died_in = AttributeDefinition('Characters')
     concept_credits = AttributeDefinition('Concepts')
     cover_date = AttributeDefinition(datetime.datetime)
     date_added = AttributeDefinition(datetime.datetime)
@@ -619,7 +639,7 @@ class Issue(_SingularResource):
     store_date = AttributeDefinition(datetime.datetime)
     story_arc_credits = AttributeDefinition('StoryArcs')
     team_credits = AttributeDefinition('Teams')
-    team_disbanded_in = AttributeDefinition('Teams')
+    teams_disbanded_in = AttributeDefinition('Teams')
     volume = AttributeDefinition('Volume')
 
     def __unicode__(self):
@@ -642,12 +662,10 @@ class Issue(_SingularResource):
         return string + u"["+unicode(self.id)+u"]"
 
     def _fix_api_error(self, name):
-        if name == 'characters_died_in':
-            return 'character_died_in'
         if name == 'disbanded_teams':
-            return 'team_disbanded_in'
-        if name == 'teams_disbanded_in':
-            return 'team_disbanded_in'
+            return 'teams_disbanded_in'
+        if name == 'team_disbanded_in':
+            return 'teams_disbanded_in'
         return super(Issue, self)._fix_api_error(name)
 
 class Issues(_SortableListResource):
@@ -850,6 +868,28 @@ class Search(_ListResource):
     def __init__(self, query, **kwargs):
         super(Search, self).__init__(query=query, **kwargs)
 
+class Series(_SingularResource):
+    aliases = AttributeDefinition('keep')
+    api_detail_url = AttributeDefinition('keep')
+    character_credits = AttributeDefinition('Characters')
+    count_of_episodes = AttributeDefinition('keep')
+    date_added = AttributeDefinition(datetime.datetime)
+    date_last_updated = AttributeDefinition(datetime.datetime)
+    deck = AttributeDefinition('keep')
+    description = AttributeDefinition('keep')
+    first_episode = AttributeDefinition('Episode')
+    id = AttributeDefinition('keep')
+    image = AttributeDefinition('keep')
+    last_episode = AttributeDefinition('Episode')
+    location_credits = AttributeDefinition('Locations')
+    name = AttributeDefinition('keep')
+    publisher = AttributeDefinition('Publisher')
+    site_detail_url = AttributeDefinition('keep')
+    start_year = AttributeDefinition('keep')
+
+class SeriesList(_ListResource):
+    pass
+
 class StoryArc(_SingularResource):
     aliases = AttributeDefinition('keep')
     api_detail_url = AttributeDefinition('keep')
@@ -1003,6 +1043,7 @@ class Volume(_SingularResource):
     first_issue = AttributeDefinition('Issue')
     id = AttributeDefinition('keep')
     image = AttributeDefinition('keep')
+    issues = AttributeDefinition('Issues')
     last_issue = AttributeDefinition('Issue')
     locations = AttributeDefinition('Locations')
     name = AttributeDefinition('keep')

@@ -2,8 +2,14 @@ LICENSE
 README.md
 plugin-import-name-comicvine.txt
 __init__.py
+client.py
 config.py
+parser.py
+ranking.py
 source.py
 utils.py
 pycomicvine/__init__.py
 pycomicvine/error.py
+pyfscache/__init__.py
+pyfscache/_version.py
+pyfscache/fscache.py

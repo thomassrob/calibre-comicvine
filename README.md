@@ -3,15 +3,10 @@ A calibre metadata source plugin for comicvine.com
 
 ## Install
 
-Dependencies:
+Dependencies (slightly modified versions included in distribution):
 
- * pycomicvine (https://github.com/authmillenon/pycomicvine)
- * Levenshtein (optional)
-
-For convenience, a modified version of pycomicvine 0.9 is included in
-the distribution to make sure there are no external dependencies.
-This will only be loaded if the module is not found elsewhere in the
-system path.
+ * pycomicvine (https://github.com/miri64/pycomicvine - 1.0 included)
+ * pyfscache (https://github.com/jcstroud/pyfscache/ - 0.9.12 included)
 
 Create a plugin zip file containing the files listed in MANIFEST and
 install.
@@ -42,7 +37,7 @@ return the most preferred result.
 To return all comicvine matches from the command line you can search
 using:
 
-    $ calibre-debug -r Comicvine [t:title] [a:author] [i:type:id]
+    $ calibre-debug -r Comicvine [t:title] [a:author] [i:type:id] [-- -v]
 
 This will search for comics that match the given fields.  Any spaces
 should be enclosed in quotes, e.g.: 
@@ -60,6 +55,8 @@ or:
     $ calibre-debug -r Comicvine t:'Batman #12' i:comicvine-volume:42721
     (0000) - 349621: Batman #12: Ghost in the Machine; [2012-08-08]
 
+For debugging purposes, the -v parameter will echo verbose logging to the console.
+
 ## Contribute 
 
 You can contribute by submitting issue tickets on GitHub
@@ -69,6 +66,7 @@ Requests. You can test the comicvine plugin by calling:
     calibre-debug -e __init__.py
 
 ## License
+Copyright (c) 2016 Chris Fairbanks
 Copyright (c) 2013 Russell Heilling
 
 pycomicvine is Copyright (c) Martin Lenders
